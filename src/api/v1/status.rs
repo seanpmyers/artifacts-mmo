@@ -1,0 +1,33 @@
+use serde::{Deserialize, Serialize};
+
+use crate::{
+    constants::api::ARTIFACTS_MMO_HOST,
+    http::{ApiEndpoint, HttpRequestMethod},
+};
+
+pub const STATUS: ApiEndpoint = ApiEndpoint {
+    host: ARTIFACTS_MMO_HOST,
+    path: "/",
+    http_request_method: HttpRequestMethod::GET,
+};
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct StatusResponse {
+    pub data: Status,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Status {
+    pub announcements: Option<Vec<Announcements>>,
+    pub characters_online: i32,
+    pub last_wipe: String,
+    pub next_wipe: String,
+    pub status: String,
+    pub version: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Announcements {
+    pub message: String,
+    pub created_at: String,
+}
