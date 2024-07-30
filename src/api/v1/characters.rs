@@ -22,7 +22,7 @@ pub const CREATE_CHARACTER: ApiEndpoint = ApiEndpoint {
     http_request_method: HttpRequestMethod::POST,
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum Skin {
     Men1,
@@ -33,15 +33,23 @@ pub enum Skin {
     Women3,
 }
 
+pub struct GetCharactersResponse {
+    pub data: Vec<Character>,
+    pub total: i32,
+    pub page: i32,
+    pub size: i32,
+    pub pages: i32,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GetCharacterResponse {
     pub data: Character,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Character {
     pub name: String,
-    pub skin: String,
+    pub skin: Skin,
     pub level: i32,
     pub xp: i32,
     pub max_xp: i32,
@@ -149,4 +157,35 @@ pub struct Character {
     pub task_type: String,
     pub task_progress: i32,
     pub task_total: i32,
+}
+
+impl Character {
+    pub fn current_inventory_quantity_total(&self) -> i32 {
+        let mut count: i32 = 0;
+        count += self.inventory_slot1_quantity;
+        count += self.inventory_slot2_quantity;
+        count += self.inventory_slot3_quantity;
+        count += self.inventory_slot4_quantity;
+        count += self.inventory_slot5_quantity;
+        count += self.inventory_slot6_quantity;
+        count += self.inventory_slot7_quantity;
+        count += self.inventory_slot8_quantity;
+        count += self.inventory_slot9_quantity;
+        count += self.inventory_slot10_quantity;
+        count += self.inventory_slot11_quantity;
+        count += self.inventory_slot12_quantity;
+        count += self.inventory_slot13_quantity;
+        count += self.inventory_slot14_quantity;
+        count += self.inventory_slot15_quantity;
+        count += self.inventory_slot16_quantity;
+        count += self.inventory_slot17_quantity;
+        count += self.inventory_slot18_quantity;
+        count += self.inventory_slot19_quantity;
+        count += self.inventory_slot20_quantity;
+        count
+    }
+
+    pub fn is_inventory_full(&self) -> bool {
+        self.current_inventory_quantity_total() >= self.inventory_max_items
+    }
 }

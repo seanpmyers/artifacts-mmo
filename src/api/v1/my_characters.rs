@@ -33,13 +33,27 @@ pub const ACTION_MOVE: ApiEndpoint = ApiEndpoint {
     http_request_method: HttpRequestMethod::POST,
 };
 
+pub const ACTION_GATHERING: ApiEndpoint = ApiEndpoint {
+    host: ARTIFACTS_MMO_HOST,
+    path: "/my/{name}/action/gathering",
+    http_request_method: HttpRequestMethod::POST,
+};
+
+pub const ACTION_CRAFTING: ApiEndpoint = ApiEndpoint {
+    host: ARTIFACTS_MMO_HOST,
+    path: "/my/{name}/action/crafting",
+    http_request_method: HttpRequestMethod::POST,
+};
+
+pub const ACTION_GE_SELL: ApiEndpoint = ApiEndpoint {
+    host: ARTIFACTS_MMO_HOST,
+    path: "/my/{name}/action/ge/sell",
+    http_request_method: HttpRequestMethod::POST,
+};
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GetMyCharactersResponse {
     pub data: Vec<MyCharacters>,
-    pub total: i32,
-    pub page: i32,
-    pub size: i32,
-    pub pages: i32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -156,6 +170,122 @@ pub struct MyCharacters {
     pub account: String,
 }
 
+impl MyCharacters {
+    pub fn to_character(&self) -> Character {
+        Character {
+            name: self.name.clone(),
+            skin: self.skin,
+            level: self.level,
+            xp: self.xp,
+            max_xp: self.max_xp,
+            total_xp: self.total_xp,
+            gold: self.gold,
+            speed: self.speed,
+            mining_level: self.mining_level,
+            mining_xp: self.mining_xp,
+            mining_max_xp: self.mining_max_xp,
+            woodcutting_level: self.woodcutting_level,
+            woodcutting_xp: self.woodcutting_xp,
+            woodcutting_max_xp: self.woodcutting_max_xp,
+            fishing_level: self.fishing_level,
+            fishing_xp: self.fishing_xp,
+            fishing_max_xp: self.fishing_max_xp,
+            cooking_level: self.cooking_level,
+            cooking_xp: self.cooking_xp,
+            cooking_max_xp: self.cooking_max_xp,
+            weaponcrafting_level: self.weaponcrafting_level,
+            weaponcrafting_xp: self.weaponcrafting_xp,
+            weaponcrafting_max_xp: self.weaponcrafting_max_xp,
+            gearcrafting_level: self.gearcrafting_level,
+            gearcrafting_xp: self.gearcrafting_xp,
+            gearcrafting_max_xp: self.gearcrafting_max_xp,
+            jewelrycrafting_level: self.jewelrycrafting_level,
+            jewelrycrafting_max_xp: self.jewelrycrafting_max_xp,
+            jewelrycrafting_xp: self.jewelrycrafting_xp,
+            hp: self.hp,
+            critical_strike: self.critical_strike,
+            stamina: self.stamina,
+            attack_fire: self.attack_fire,
+            attack_earth: self.attack_earth,
+            attack_water: self.attack_water,
+            attack_air: self.attack_air,
+            dmg_fire: self.dmg_fire,
+            dmg_earth: self.dmg_earth,
+            dmg_water: self.dmg_water,
+            dmg_air: self.dmg_air,
+            res_fire: self.res_fire,
+            res_earth: self.res_earth,
+            res_water: self.res_water,
+            res_air: self.res_air,
+            x: self.x,
+            y: self.y,
+            cooldown: self.cooldown,
+            cooldown_expiration: self.cooldown_expiration.clone(),
+            weapon_slot: self.weapon_slot.clone(),
+            shield_slot: self.shield_slot.clone(),
+            helmet_slot: self.helmet_slot.clone(),
+            body_armor_slot: self.body_armor_slot.clone(),
+            leg_armor_slot: self.leg_armor_slot.clone(),
+            boots_slot: self.boots_slot.clone(),
+            ring1_slot: self.ring1_slot.clone(),
+            ring2_slot: self.ring2_slot.clone(),
+            amulet_slot: self.amulet_slot.clone(),
+            artifact1_slot: self.artifact1_slot.clone(),
+            artifact2_slot: self.artifact2_slot.clone(),
+            artifact3_slot: self.artifact3_slot.clone(),
+            consumable1_slot: self.consumable1_slot.clone(),
+            consumable1_slot_quantity: self.consumable1_slot_quantity,
+            consumable2_slot: self.consumable2_slot.clone(),
+            consumable2_slot_quantity: self.consumable2_slot_quantity,
+            inventory_slot1: self.inventory_slot1.clone(),
+            inventory_slot1_quantity: self.inventory_slot1_quantity,
+            inventory_slot2: self.inventory_slot2.clone(),
+            inventory_slot2_quantity: self.inventory_slot2_quantity,
+            inventory_slot3: self.inventory_slot3.clone(),
+            inventory_slot3_quantity: self.inventory_slot3_quantity,
+            inventory_slot4: self.inventory_slot4.clone(),
+            inventory_slot4_quantity: self.inventory_slot4_quantity,
+            inventory_slot5: self.inventory_slot5.clone(),
+            inventory_slot5_quantity: self.inventory_slot5_quantity,
+            inventory_slot6: self.inventory_slot6.clone(),
+            inventory_slot6_quantity: self.inventory_slot6_quantity,
+            inventory_slot7: self.inventory_slot7.clone(),
+            inventory_slot7_quantity: self.inventory_slot7_quantity,
+            inventory_slot8: self.inventory_slot8.clone(),
+            inventory_slot8_quantity: self.inventory_slot8_quantity,
+            inventory_slot9: self.inventory_slot9.clone(),
+            inventory_slot9_quantity: self.inventory_slot9_quantity,
+            inventory_slot10: self.inventory_slot10.clone(),
+            inventory_slot10_quantity: self.inventory_slot10_quantity,
+            inventory_slot11: self.inventory_slot11.clone(),
+            inventory_slot11_quantity: self.inventory_slot11_quantity,
+            inventory_slot12: self.inventory_slot12.clone(),
+            inventory_slot12_quantity: self.inventory_slot12_quantity,
+            inventory_slot13: self.inventory_slot13.clone(),
+            inventory_slot13_quantity: self.inventory_slot13_quantity,
+            inventory_slot14: self.inventory_slot14.clone(),
+            inventory_slot14_quantity: self.inventory_slot14_quantity,
+            inventory_slot15: self.inventory_slot15.clone(),
+            inventory_slot15_quantity: self.inventory_slot15_quantity,
+            inventory_slot16: self.inventory_slot16.clone(),
+            inventory_slot16_quantity: self.inventory_slot16_quantity,
+            inventory_slot17: self.inventory_slot17.clone(),
+            inventory_slot17_quantity: self.inventory_slot17_quantity,
+            inventory_slot18: self.inventory_slot18.clone(),
+            inventory_slot18_quantity: self.inventory_slot18_quantity,
+            inventory_slot19: self.inventory_slot19.clone(),
+            inventory_slot19_quantity: self.inventory_slot19_quantity,
+            inventory_slot20: self.inventory_slot20.clone(),
+            inventory_slot20_quantity: self.inventory_slot20_quantity,
+            inventory_max_items: self.inventory_max_items,
+            task: self.task.clone(),
+            task_type: self.task_type.clone(),
+            task_progress: self.task_progress,
+            task_total: self.task_total,
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ActionMoveRequest {
     pub x: i32,
@@ -164,7 +294,7 @@ pub struct ActionMoveRequest {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ActionMoveResponse {
-    data: ActionMove,
+    pub data: ActionMove,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -174,7 +304,7 @@ pub struct ActionMove {
     pub character: Character,
 }
 
-impl QueryParameters for ActionMove {
+impl QueryParameters for ActionMoveRequest {
     fn get_path(parameter: String) -> String {
         ACTION_MOVE.path.to_string().replace("{name}", &parameter)
     }
@@ -226,4 +356,76 @@ pub enum ContentVariant {
 pub struct Content {
     pub code: Option<String>,
     pub resource: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ActionGatheringRequest {
+    pub name: String,
+}
+
+impl QueryParameters for ActionGatheringRequest {
+    fn get_path(parameter: String) -> String {
+        ACTION_GATHERING
+            .path
+            .to_string()
+            .replace("{name}", &parameter)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ActionGatheringResponse {
+    pub data: ActionGathering,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ActionGathering {
+    pub cooldown: Cooldown,
+    pub character: Character,
+    pub details: SkillInfoSchema,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SkillInfoSchema {
+    pub xp: f32,
+    pub items: Vec<DropSchema>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DropSchema {
+    pub code: String,
+    pub quantity: f32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ActionCraftingRequest {
+    pub code: String,
+    pub quantity: i32,
+}
+
+impl QueryParameters for ActionCraftingRequest {
+    fn get_path(parameter: String) -> String {
+        ACTION_CRAFTING
+            .path
+            .to_string()
+            .replace("{name}", &parameter)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ActionCraftingResonse {
+    pub data: ActionCrafting,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ActionCrafting {
+    pub cooldown: Cooldown,
+    pub character: Character,
+    pub details: SkillInfoSchema,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ActionGeSellItemRequest {
+    pub code: String,
+    pub quantity: i32,
+    pub price: f32,
 }
