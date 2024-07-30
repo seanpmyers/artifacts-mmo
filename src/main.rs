@@ -1,29 +1,28 @@
-use std::{
-    fs::{File, OpenOptions},
-    i32::MIN,
-    io::Write,
-    path::Path,
-    thread::sleep,
-    time::Duration,
-};
+use std::{thread::sleep, time::Duration};
 
 use anyhow::Result;
 
 use api::v1::{
     characters::Character,
+    items::{GetItemRequest, GetItemResponse, GET_ITEM},
     my_characters::{
-        ActionGatheringRequest, ActionGatheringResponse, ActionMoveRequest, ActionMoveResponse,
-        GetMyCharactersResponse, MyCharacters,
+        ActionCraftingRequest, ActionCraftingResponse, ActionGatheringRequest,
+        ActionGatheringResponse, ActionGeSellItemRequest, ActionGeSellItemResponse,
+        ActionMoveRequest, ActionMoveResponse, GetMyCharactersResponse, MyCharacters,
+        ACTION_CRAFTING, ACTION_GE_SELL_ITEM,
     },
     status::StatusResponse,
     QueryParameters,
 };
+use configuration::configure_logging;
 use constants::{api::ARTIFACTS_MMO_HOST, environment_variables::API_TOKEN};
-use env_logger::{Builder, Target};
+
+use http::HttpRequestMethod;
 use log::{error, info, warn};
-use time::{format_description::well_known::Rfc3339, OffsetDateTime};
+use url::Url;
 
 pub mod api;
+pub mod configuration;
 pub mod constants;
 pub mod http;
 
@@ -68,15 +67,6 @@ fn main() -> Result<()> {
     }
 
     Ok(())
-}
-
-pub fn write_to_output_file(text: String) {
-    let file_path = Path::new("output.txt");
-    if !file_path.exists() {
-        File::create(file_path).expect("Unable to create file");
-    }
-    let mut file: File = OpenOptions::new().append(true).open(file_path).unwrap();
-    write!(file, "\n{}", text).unwrap();
 }
 
 pub fn call_get_status(http_client: &mut ureq::Agent) -> Option<StatusResponse> {
@@ -218,24 +208,6 @@ pub fn call_action_gathering(
     None
 }
 
-pub fn configure_logging() -> Result<()> {
-    Builder::new()
-        .target(Target::Stdout)
-        .format(move |buf, record| -> Result<(), std::io::Error> {
-            writeln!(
-                buf,
-                "[ARTIFACTS_MMO]:[{}]:[{}] - {}",
-                record.level(),
-                OffsetDateTime::now_utc().format(&Rfc3339).unwrap(),
-                record.args()
-            )
-        })
-        .filter(None, log::LevelFilter::Debug)
-        .init();
-
-    Ok(())
-}
-
 pub fn start_mining(
     mut character: Character,
     http_client: &mut ureq::Agent,
@@ -251,9 +223,7 @@ pub fn start_mining(
         }
     }
     while *mining_active {
-        if character.cooldown > 0 {
-            sleep(Duration::from_secs(character.cooldown as u64));
-        }
+        character.wait_for_cooldown();
         let gathering_response: Option<ActionGatheringResponse> = call_action_gathering(
             http_client,
             api_token,
@@ -265,11 +235,12 @@ pub fn start_mining(
 
         if let Some(gathering) = gathering_response {
             character = gathering.data.character;
+            character.wait_for_cooldown();
         }
-
-        if character.is_inventory_full() {
+        let full_inventory: bool = character.is_inventory_full();
+        if full_inventory {
             *mining_active = false;
-            let move_result = call_action_move(
+            let move_result: Option<ActionMoveResponse> = call_action_move(
                 http_client,
                 api_token,
                 &character.name,
@@ -280,10 +251,238 @@ pub fn start_mining(
             );
             if let Some(move_response) = move_result {
                 character = move_response.data.character;
-                let crafting_result = call_action_crafting();
+                character.wait_for_cooldown();
+                let item_data: Option<GetItemResponse> = call_get_item(
+                    http_client,
+                    api_token,
+                    GetItemRequest {
+                        code: character.inventory_slot1.clone(),
+                    },
+                );
+                if let Some(item) = item_data {
+                    let crafting_result: Option<ActionCraftingResponse> = call_action_crafting(
+                        http_client,
+                        api_token,
+                        character.name.to_string(),
+                        ActionCraftingRequest {
+                            code: "copper".to_string(),
+                            quantity: character.inventory_slot1_quantity / 6,
+                        },
+                    );
+                    if let Some(crafting) = crafting_result {
+                        character = crafting.data.character;
+                        character.wait_for_cooldown();
+                        let move_result: Option<ActionMoveResponse> = call_action_move(
+                            http_client,
+                            api_token,
+                            &character.name,
+                            &ActionMoveRequest {
+                                x: WEAPON_CRAFTING_WORKSHOP_LOCATION.0,
+                                y: WEAPON_CRAFTING_WORKSHOP_LOCATION.1,
+                            },
+                        );
+                        if let Some(movement) = move_result {
+                            character = movement.data.character;
+                            character.wait_for_cooldown();
+                            let crafting_result: Option<ActionCraftingResponse> =
+                                call_action_crafting(
+                                    http_client,
+                                    api_token,
+                                    character.name.to_string(),
+                                    ActionCraftingRequest {
+                                        code: "copper_dagger".to_string(),
+                                        quantity: character.inventory_slot2_quantity / 3,
+                                    },
+                                );
+                            if let Some(crafting) = crafting_result {
+                                character = crafting.data.character;
+                                character.wait_for_cooldown();
+                                let move_result: Option<ActionMoveResponse> = call_action_move(
+                                    http_client,
+                                    api_token,
+                                    &character.name,
+                                    &ActionMoveRequest {
+                                        x: GRAND_EXCHANGE_LOCATION.0,
+                                        y: GRAND_EXCHANGE_LOCATION.1,
+                                    },
+                                );
+                                if let Some(movement_to_ge) = move_result {
+                                    character = movement_to_ge.data.character;
+                                    character.wait_for_cooldown();
+                                    let sell_result: Option<ActionGeSellItemResponse> =
+                                        call_action_ge_sell_item(
+                                            http_client,
+                                            api_token,
+                                            character.name.to_string(),
+                                            ActionGeSellItemRequest {
+                                                code: character.inventory_slot3.clone(),
+                                                quantity: character.inventory_slot3_quantity,
+                                                price: 100f32,
+                                            },
+                                        );
+                                    if let Some(sell) = sell_result {
+                                        character = sell.data.character;
+                                        character.wait_for_cooldown();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 }
 
-pub fn call_action_crafting() {}
+pub fn call_get_item(
+    http_client: &mut ureq::Agent,
+    api_token: &String,
+    body: GetItemRequest,
+) -> Option<GetItemResponse> {
+    let url: Url = Url::parse(&format!(
+        "{}{}{}",
+        "https://",
+        ARTIFACTS_MMO_HOST,
+        api::v1::items::GetItemRequest::get_path(body.code)
+    ))
+    .unwrap();
+
+    let api_request_result: Option<ureq::Response> = make_api_call::<GetItemRequest>(
+        http_client,
+        get_headers(api_token),
+        GET_ITEM.http_request_method,
+        url,
+        None,
+    );
+    if let Some(response) = api_request_result {
+        info!("{:?}", response);
+        let response_data: GetItemResponse = response.into_json::<GetItemResponse>().unwrap();
+        info!("{}", serde_json::to_string_pretty(&response_data).unwrap());
+        return Some(response_data);
+    }
+    None
+}
+
+pub fn call_action_crafting(
+    http_client: &mut ureq::Agent,
+    api_token: &String,
+    character_name: String,
+    body: ActionCraftingRequest,
+) -> Option<ActionCraftingResponse> {
+    let url: Url = Url::parse(&format!(
+        "{}{}{}",
+        "https://",
+        ARTIFACTS_MMO_HOST,
+        api::v1::my_characters::ActionCraftingRequest::get_path(character_name)
+    ))
+    .unwrap();
+    let reponse: Option<ureq::Response> = make_api_call(
+        http_client,
+        get_headers(api_token),
+        ACTION_CRAFTING.http_request_method,
+        url,
+        Some(body),
+    );
+    if let Some(response) = reponse {
+        info!("{:?}", response);
+        let response_data: ActionCraftingResponse =
+            response.into_json::<ActionCraftingResponse>().unwrap();
+        info!("{}", serde_json::to_string_pretty(&response_data).unwrap());
+        return Some(response_data);
+    }
+    None
+}
+
+pub fn start_working() {}
+
+pub fn make_api_call<T: serde::Serialize>(
+    http_client: &mut ureq::Agent,
+    headers: Vec<(String, String)>,
+    http_request_method: HttpRequestMethod,
+    url: Url,
+    body: Option<T>,
+) -> Option<ureq::Response> {
+    let mut request: ureq::Request =
+        http_client.request_url(&http_request_method.to_string(), &url);
+    for header in headers {
+        request = request.set(&header.0, &header.1);
+    }
+    match body {
+        Some(body) => {
+            let result = request.send_json(body);
+            match result {
+                Ok(response) => return Some(response),
+                Err(error) => match error {
+                    ureq::Error::Status(code, response) => match code {
+                        404 => error!("response: {:?}", response),
+                        486 => warn!("{:?} ", response),
+                        493 => error!("response: {:?}", response),
+                        498 => error!("response: {:?}", response),
+                        499 => warn!("response: {:?}", response),
+                        _ => error!(" response: {:?}", response),
+                    },
+                    ureq::Error::Transport(_) => error!("{:?}", error),
+                },
+            };
+            None
+        }
+        None => {
+            let result = request.call();
+            match result {
+                Ok(response) => return Some(response),
+                Err(error) => match error {
+                    ureq::Error::Status(code, response) => match code {
+                        404 => error!("response: {:?}", response),
+                        486 => warn!("{:?} ", response),
+                        493 => error!("response: {:?}", response),
+                        498 => error!("response: {:?}", response),
+                        499 => warn!("response: {:?}", response),
+                        _ => error!(" response: {:?}", response),
+                    },
+                    ureq::Error::Transport(_) => error!("{:?}", error),
+                },
+            };
+            None
+        }
+    }
+}
+
+pub fn get_headers(api_token: &String) -> Vec<(String, String)> {
+    vec![
+        ("accept".to_string(), "application/json".to_string()),
+        ("authorization".to_string(), format!("Bearer {}", api_token)),
+    ]
+}
+
+pub fn call_action_ge_sell_item(
+    http_client: &mut ureq::Agent,
+    api_token: &String,
+    character_name: String,
+    body: ActionGeSellItemRequest,
+) -> Option<ActionGeSellItemResponse> {
+    let url: Url = Url::parse(&format!(
+        "{}{}{}",
+        "https://",
+        ARTIFACTS_MMO_HOST,
+        api::v1::my_characters::ActionGeSellItemRequest::get_path(character_name)
+    ))
+    .unwrap();
+
+    let api_request_result: Option<ureq::Response> = make_api_call::<ActionGeSellItemRequest>(
+        http_client,
+        get_headers(api_token),
+        ACTION_GE_SELL_ITEM.http_request_method,
+        url,
+        Some(body),
+    );
+
+    if let Some(response) = api_request_result {
+        info!("{:?}", response);
+        let response_data: ActionGeSellItemResponse =
+            response.into_json::<ActionGeSellItemResponse>().unwrap();
+        info!("{}", serde_json::to_string_pretty(&response_data).unwrap());
+        return Some(response_data);
+    }
+
+    None
+}

@@ -45,7 +45,7 @@ pub const ACTION_CRAFTING: ApiEndpoint = ApiEndpoint {
     http_request_method: HttpRequestMethod::POST,
 };
 
-pub const ACTION_GE_SELL: ApiEndpoint = ApiEndpoint {
+pub const ACTION_GE_SELL_ITEM: ApiEndpoint = ApiEndpoint {
     host: ARTIFACTS_MMO_HOST,
     path: "/my/{name}/action/ge/sell",
     http_request_method: HttpRequestMethod::POST,
@@ -412,7 +412,7 @@ impl QueryParameters for ActionCraftingRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ActionCraftingResonse {
+pub struct ActionCraftingResponse {
     pub data: ActionCrafting,
 }
 
@@ -428,4 +428,33 @@ pub struct ActionGeSellItemRequest {
     pub code: String,
     pub quantity: i32,
     pub price: f32,
+}
+
+impl QueryParameters for ActionGeSellItemRequest {
+    fn get_path(parameter: String) -> String {
+        ACTION_GE_SELL_ITEM
+            .path
+            .to_string()
+            .replace("{name}", &parameter)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ActionGeSellItemResponse {
+    pub data: GETransactionListSchema,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GETransactionListSchema {
+    pub cooldown: Cooldown,
+    pub character: Character,
+    pub transaction: GETransactionSchema,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GETransactionSchema {
+    pub item: String,
+    pub quantity: i32,
+    pub price: f32,
+    pub total_price: f32,
 }

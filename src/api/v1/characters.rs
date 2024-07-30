@@ -1,3 +1,4 @@
+use log::info;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -187,5 +188,15 @@ impl Character {
 
     pub fn is_inventory_full(&self) -> bool {
         self.current_inventory_quantity_total() >= self.inventory_max_items
+    }
+
+    pub fn wait_for_cooldown(&self) {
+        if self.cooldown > 0 {
+            info!(
+                "Waiting {} seconds for cooldown to expire for character {}...",
+                self.cooldown, self.name
+            );
+            std::thread::sleep(std::time::Duration::from_secs(self.cooldown as u64));
+        }
     }
 }
