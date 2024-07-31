@@ -9,7 +9,7 @@ pub fn configure_logging() -> Result<()> {
         .format(move |buf, record| -> Result<(), std::io::Error> {
             writeln!(
                 buf,
-                "[ARTIFACTS_MMO]:[{}]:[{}] - {}",
+                "[ARTIFACTS_MMO]:[{:<5}]:[{:<27}] - {}",
                 record.level(),
                 OffsetDateTime::now_utc().format(&Rfc3339).unwrap(),
                 record.args()
