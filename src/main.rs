@@ -1,7 +1,7 @@
 use anyhow::Result;
 
 use api::v1::{
-    characters::Character,
+    characters::{Character, InventorySlot},
     items::{GetItemRequest, GetItemResponse, GET_ITEM},
     my_characters::{
         ActionCraftingRequest, ActionCraftingResponse, ActionGatheringRequest,
@@ -16,7 +16,7 @@ use configuration::configure_logging;
 use constants::{api::ARTIFACTS_MMO_HOST, environment_variables::API_TOKEN};
 
 use http::HttpRequestMethod;
-use log::{error, info, warn};
+use log::{debug, error, info, warn};
 use url::Url;
 
 pub mod api;
@@ -212,7 +212,7 @@ pub fn start_mining(
     api_token: &String,
     mining_active: &mut bool,
 ) {
-    character = sell_all_items(http_client, api_token, character);
+    try_craft_copper(http_client, api_token, character.clone());
     if character.x != 2 || character.y != 0 {
         let movement: ActionMoveRequest = ActionMoveRequest { x: 2, y: 0 };
         let action_move: Option<ActionMoveResponse> =
@@ -239,68 +239,43 @@ pub fn start_mining(
         let full_inventory: bool = character.is_inventory_full();
         if full_inventory {
             *mining_active = false;
+            let crafted_copper: bool = try_craft_copper(http_client, api_token, character.clone());
+            if !crafted_copper {
+                return;
+            }
+
             let move_result: Option<ActionMoveResponse> = call_action_move(
                 http_client,
                 api_token,
                 &character.name,
                 &ActionMoveRequest {
-                    x: MINING_WORKSHOP_LOCATION.0,
-                    y: MINING_WORKSHOP_LOCATION.1,
+                    x: WEAPON_CRAFTING_WORKSHOP_LOCATION.0,
+                    y: WEAPON_CRAFTING_WORKSHOP_LOCATION.1,
                 },
             );
-            if let Some(move_response) = move_result {
-                character = move_response.data.character;
+            if let Some(movement) = move_result {
+                character = movement.data.character;
                 character.wait_for_cooldown();
-                let item_data: Option<GetItemResponse> = call_get_item(
+                let copper_dagger_count: i32 = character
+                    .inventory
+                    .iter()
+                    .find(|slot| slot.code == "copper_dagger")
+                    .unwrap()
+                    .quantity;
+                let crafting_result: Option<ActionCraftingResponse> = call_action_crafting(
                     http_client,
                     api_token,
-                    GetItemRequest {
-                        code: character.inventory_slot1.clone(),
+                    character.name.to_string(),
+                    ActionCraftingRequest {
+                        code: "copper_dagger".to_string(),
+                        quantity: copper_dagger_count / 3,
                     },
                 );
-                if let Some(item) = item_data {
-                    let crafting_result: Option<ActionCraftingResponse> = call_action_crafting(
-                        http_client,
-                        api_token,
-                        character.name.to_string(),
-                        ActionCraftingRequest {
-                            code: "copper".to_string(),
-                            quantity: character.inventory_slot1_quantity / 6,
-                        },
-                    );
-                    if let Some(crafting) = crafting_result {
-                        character = crafting.data.character;
-                        character.wait_for_cooldown();
-                        let move_result: Option<ActionMoveResponse> = call_action_move(
-                            http_client,
-                            api_token,
-                            &character.name,
-                            &ActionMoveRequest {
-                                x: WEAPON_CRAFTING_WORKSHOP_LOCATION.0,
-                                y: WEAPON_CRAFTING_WORKSHOP_LOCATION.1,
-                            },
-                        );
-                        if let Some(movement) = move_result {
-                            character = movement.data.character;
-                            character.wait_for_cooldown();
-                            let crafting_result: Option<ActionCraftingResponse> =
-                                call_action_crafting(
-                                    http_client,
-                                    api_token,
-                                    character.name.to_string(),
-                                    ActionCraftingRequest {
-                                        code: "copper_dagger".to_string(),
-                                        quantity: character.inventory_slot2_quantity / 3,
-                                    },
-                                );
-                            if let Some(crafting) = crafting_result {
-                                character = crafting.data.character;
-                                character.wait_for_cooldown();
-                                character = sell_all_items(http_client, api_token, character);
-                                *mining_active = true;
-                            }
-                        }
-                    }
+                if let Some(crafting) = crafting_result {
+                    character = crafting.data.character;
+                    character.wait_for_cooldown();
+                    character = sell_all_items(http_client, api_token, character);
+                    *mining_active = true;
                 }
             }
         }
@@ -327,45 +302,23 @@ pub fn sell_all_items(
             character.wait_for_cooldown();
         }
     }
-    if character.inventory_slot1_quantity > 0 {
+    let inventory: Vec<InventorySlot> = character.inventory.clone();
+    for slot in inventory.iter() {
+        if slot.quantity <= 0 {
+            continue;
+        }
         let item_result: Option<GetItemResponse> = call_get_item(
             http_client,
             api_token,
             GetItemRequest {
-                code: character.inventory_slot1.clone(),
+                code: slot.code.clone(),
             },
         );
         if let Some(item) = item_result {
-            let quantity = character.inventory_slot1_quantity;
-            character = sell_inventory_item(http_client, api_token, character, item, quantity);
+            character = sell_inventory_item(http_client, api_token, character, item, slot.quantity);
         }
     }
-    if character.inventory_slot2_quantity > 0 {
-        let item_result: Option<GetItemResponse> = call_get_item(
-            http_client,
-            api_token,
-            GetItemRequest {
-                code: character.inventory_slot2.clone(),
-            },
-        );
-        if let Some(item) = item_result {
-            let quantity = character.inventory_slot2_quantity;
-            character = sell_inventory_item(http_client, api_token, character, item, quantity);
-        }
-    }
-    if character.inventory_slot3_quantity > 0 {
-        let item_result: Option<GetItemResponse> = call_get_item(
-            http_client,
-            api_token,
-            GetItemRequest {
-                code: character.inventory_slot3.clone(),
-            },
-        );
-        if let Some(item) = item_result {
-            let quantity = character.inventory_slot3_quantity;
-            character = sell_inventory_item(http_client, api_token, character, item, quantity);
-        }
-    }
+
     character
 }
 
@@ -382,7 +335,7 @@ pub fn sell_inventory_item(
         character.name.to_string(),
         ActionGeSellItemRequest {
             code: item.data.item.code,
-            quantity: quantity,
+            quantity,
             price: item.data.ge.unwrap().sell_price.unwrap() as f32,
         },
     );
@@ -451,8 +404,6 @@ pub fn call_action_crafting(
     }
     None
 }
-
-pub fn start_working() {}
 
 pub fn make_api_call<T: serde::Serialize>(
     http_client: &mut ureq::Agent,
@@ -544,4 +495,69 @@ pub fn call_action_ge_sell_item(
     }
 
     None
+}
+
+pub fn try_craft_copper(
+    http_client: &mut ureq::Agent,
+    api_token: &String,
+    character: Character,
+) -> bool {
+    if character.inventory.is_empty() {
+        debug!(
+            "{}'s inventory is empty -- cannot craft copper.",
+            character.name
+        );
+        return false;
+    }
+    if !character
+        .inventory
+        .iter()
+        .any(|item| item.code == "copper_ore" && item.quantity >= 6)
+    {
+        debug!(
+            "{} does not have enough copper ore to craft.",
+            character.name
+        );
+        return false;
+    }
+    if character.x != MINING_WORKSHOP_LOCATION.0 && character.y != MINING_WORKSHOP_LOCATION.1 {
+        let move_result: Option<ActionMoveResponse> = call_action_move(
+            http_client,
+            api_token,
+            &character.name,
+            &ActionMoveRequest {
+                x: MINING_WORKSHOP_LOCATION.0,
+                y: MINING_WORKSHOP_LOCATION.1,
+            },
+        );
+        if let Some(movement) = move_result {
+            let character: Character = movement.data.character;
+            character.wait_for_cooldown();
+        } else {
+            return false;
+        }
+    }
+    let copper_count: i32 = character
+        .inventory
+        .iter()
+        .find(|slot| slot.code == "copper_ore")
+        .unwrap()
+        .quantity;
+
+    let crafting_result: Option<ActionCraftingResponse> = call_action_crafting(
+        http_client,
+        api_token,
+        character.name.to_string(),
+        ActionCraftingRequest {
+            code: "copper".to_string(),
+            quantity: copper_count / 6,
+        },
+    );
+    if let Some(crafting) = crafting_result {
+        let character: Character = crafting.data.character;
+        character.wait_for_cooldown();
+    } else {
+        return false;
+    }
+    true
 }
