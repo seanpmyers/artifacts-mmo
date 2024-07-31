@@ -1,5 +1,3 @@
-use std::{thread::sleep, time::Duration};
-
 use anyhow::Result;
 
 use api::v1::{
@@ -171,7 +169,7 @@ pub fn call_action_move(
 pub fn call_action_gathering(
     http_client: &mut ureq::Agent,
     api_token: &String,
-    character_name: &str,
+    character_name: String,
     body: &ActionGatheringRequest,
 ) -> Option<ActionGatheringResponse> {
     let url: String = format!(
@@ -214,6 +212,7 @@ pub fn start_mining(
     api_token: &String,
     mining_active: &mut bool,
 ) {
+    character = sell_all_items(http_client, api_token, character);
     if character.x != 2 || character.y != 0 {
         let movement: ActionMoveRequest = ActionMoveRequest { x: 2, y: 0 };
         let action_move: Option<ActionMoveResponse> =
@@ -227,7 +226,7 @@ pub fn start_mining(
         let gathering_response: Option<ActionGatheringResponse> = call_action_gathering(
             http_client,
             api_token,
-            &character.name,
+            character.name.clone(),
             &ActionGatheringRequest {
                 name: character.name.clone(),
             },
@@ -297,34 +296,8 @@ pub fn start_mining(
                             if let Some(crafting) = crafting_result {
                                 character = crafting.data.character;
                                 character.wait_for_cooldown();
-                                let move_result: Option<ActionMoveResponse> = call_action_move(
-                                    http_client,
-                                    api_token,
-                                    &character.name,
-                                    &ActionMoveRequest {
-                                        x: GRAND_EXCHANGE_LOCATION.0,
-                                        y: GRAND_EXCHANGE_LOCATION.1,
-                                    },
-                                );
-                                if let Some(movement_to_ge) = move_result {
-                                    character = movement_to_ge.data.character;
-                                    character.wait_for_cooldown();
-                                    let sell_result: Option<ActionGeSellItemResponse> =
-                                        call_action_ge_sell_item(
-                                            http_client,
-                                            api_token,
-                                            character.name.to_string(),
-                                            ActionGeSellItemRequest {
-                                                code: character.inventory_slot3.clone(),
-                                                quantity: character.inventory_slot3_quantity,
-                                                price: 100f32,
-                                            },
-                                        );
-                                    if let Some(sell) = sell_result {
-                                        character = sell.data.character;
-                                        character.wait_for_cooldown();
-                                    }
-                                }
+                                character = sell_all_items(http_client, api_token, character);
+                                *mining_active = true;
                             }
                         }
                     }
@@ -332,6 +305,92 @@ pub fn start_mining(
             }
         }
     }
+}
+
+pub fn sell_all_items(
+    http_client: &mut ureq::Agent,
+    api_token: &String,
+    mut character: Character,
+) -> Character {
+    if character.x != GRAND_EXCHANGE_LOCATION.0 || character.y != GRAND_EXCHANGE_LOCATION.1 {
+        let move_result: Option<ActionMoveResponse> = call_action_move(
+            http_client,
+            api_token,
+            &character.name,
+            &ActionMoveRequest {
+                x: GRAND_EXCHANGE_LOCATION.0,
+                y: GRAND_EXCHANGE_LOCATION.1,
+            },
+        );
+        if let Some(movement_to_ge) = move_result {
+            character = movement_to_ge.data.character;
+            character.wait_for_cooldown();
+        }
+    }
+    if character.inventory_slot1_quantity > 0 {
+        let item_result: Option<GetItemResponse> = call_get_item(
+            http_client,
+            api_token,
+            GetItemRequest {
+                code: character.inventory_slot1.clone(),
+            },
+        );
+        if let Some(item) = item_result {
+            let quantity = character.inventory_slot1_quantity;
+            character = sell_inventory_item(http_client, api_token, character, item, quantity);
+        }
+    }
+    if character.inventory_slot2_quantity > 0 {
+        let item_result: Option<GetItemResponse> = call_get_item(
+            http_client,
+            api_token,
+            GetItemRequest {
+                code: character.inventory_slot2.clone(),
+            },
+        );
+        if let Some(item) = item_result {
+            let quantity = character.inventory_slot2_quantity;
+            character = sell_inventory_item(http_client, api_token, character, item, quantity);
+        }
+    }
+    if character.inventory_slot3_quantity > 0 {
+        let item_result: Option<GetItemResponse> = call_get_item(
+            http_client,
+            api_token,
+            GetItemRequest {
+                code: character.inventory_slot3.clone(),
+            },
+        );
+        if let Some(item) = item_result {
+            let quantity = character.inventory_slot3_quantity;
+            character = sell_inventory_item(http_client, api_token, character, item, quantity);
+        }
+    }
+    character
+}
+
+pub fn sell_inventory_item(
+    http_client: &mut ureq::Agent,
+    api_token: &String,
+    mut character: Character,
+    item: GetItemResponse,
+    quantity: i32,
+) -> Character {
+    let sell_result: Option<ActionGeSellItemResponse> = call_action_ge_sell_item(
+        http_client,
+        api_token,
+        character.name.to_string(),
+        ActionGeSellItemRequest {
+            code: item.data.item.code,
+            quantity: quantity,
+            price: item.data.ge.unwrap().sell_price.unwrap() as f32,
+        },
+    );
+    if let Some(sell) = sell_result {
+        character = sell.data.character;
+        character.wait_for_cooldown();
+    }
+    character
 }
 
 pub fn call_get_item(
@@ -376,14 +435,14 @@ pub fn call_action_crafting(
         api::v1::my_characters::ActionCraftingRequest::get_path(character_name)
     ))
     .unwrap();
-    let reponse: Option<ureq::Response> = make_api_call(
+    let response: Option<ureq::Response> = make_api_call(
         http_client,
         get_headers(api_token),
         ACTION_CRAFTING.http_request_method,
         url,
         Some(body),
     );
-    if let Some(response) = reponse {
+    if let Some(response) = response {
         info!("{:?}", response);
         let response_data: ActionCraftingResponse =
             response.into_json::<ActionCraftingResponse>().unwrap();
