@@ -376,7 +376,7 @@ pub struct GETransactionListSchema {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GETransactionSchema {
-    pub item: String,
+    pub code: String,
     pub quantity: i32,
     pub price: f32,
     pub total_price: f32,

@@ -18,7 +18,7 @@ pub const GET_GE_ITEM: ApiEndpoint = ApiEndpoint {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct GeItemSchema {
-    pub item: String,
+    pub code: String,
     pub stock: i32,
     pub sell_price: Option<i32>,
     pub buy_price: Option<i32>,

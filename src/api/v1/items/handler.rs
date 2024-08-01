@@ -30,6 +30,7 @@ pub fn call_get_item(
     );
     if let Some(response) = api_request_result {
         info!("{:?}", response);
+
         let response_data: GetItemResponse = response.into_json::<GetItemResponse>().unwrap();
         info!("{}", serde_json::to_string_pretty(&response_data).unwrap());
         return Some(response_data);
