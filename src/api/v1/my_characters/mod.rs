@@ -130,7 +130,6 @@ pub struct MyCharacters {
     pub task_type: String,
     pub task_progress: i32,
     pub task_total: i32,
-    pub account: String,
 }
 
 impl MyCharacters {

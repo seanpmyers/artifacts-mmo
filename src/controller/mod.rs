@@ -304,6 +304,9 @@ pub fn clear_inventory(
     api_token: &String,
     character: &mut Character,
 ) -> bool {
+    if character.inventory.is_empty() {
+        return true;
+    }
     if !try_craft_copper(http_client, api_token, character) && !has_copper(character) {
         return false;
     }
