@@ -5,3 +5,5 @@ pub mod api {
 pub mod environment_variables {
     pub const API_TOKEN: &str = "API_TOKEN";
 }
+
+pub const ARTIFACTS_MMO: &str = "Artifacts-MMO";

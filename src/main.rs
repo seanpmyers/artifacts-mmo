@@ -4,24 +4,31 @@ use configuration::configure_logging;
 use constants::environment_variables::API_TOKEN;
 
 use controller::start_playing;
+use interface::configuration::desktop::configure_dioxus_desktop;
 use log::info;
+
+use dioxus::{desktop::Config, prelude::*};
+use tracing::Level;
 
 pub mod api;
 pub mod configuration;
 pub mod constants;
 pub mod controller;
 pub mod http;
+pub mod interface;
 
 fn main() -> Result<()> {
     configure_logging()?;
     info!("RUN STARTED");
 
-    let api_token: String =
-        std::env::var(API_TOKEN).expect("Environment variable not set: API_TOKEN");
-
     let mut http_client: ureq::Agent = ureq::AgentBuilder::new().build();
 
-    start_playing(&mut http_client, api_token);
+    // start_playing(&mut http_client, api_token);
+    dioxus_logger::init(Level::DEBUG).expect("failed to initialize logger");
+    dioxus_sdk::storage::set_dir!();
+    let launch_builder: LaunchBuilder<Config> = LaunchBuilder::desktop()
+        .with_cfg(configure_dioxus_desktop().with_background_color((0, 0, 0, 0)));
+    launch_builder.launch(interface::app::App);
 
     Ok(())
 }

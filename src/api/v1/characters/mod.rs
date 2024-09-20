@@ -54,7 +54,6 @@ pub struct Character {
     pub level: i32,
     pub xp: i32,
     pub max_xp: i32,
-    pub total_xp: i32,
     pub gold: i32,
     pub speed: i32,
     pub mining_level: i32,

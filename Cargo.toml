@@ -5,11 +5,20 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.86"
+chrono = { version = "0.4.38", features = ["serde"] }
+chrono-tz = { version = "0.9.0", features = ["serde"] }
+iana-time-zone = "0.1.60"
 env_logger = "0.11.5"
 # Logging
 log = { version = "0.4.22", features = ["serde"] }
+dioxus = { version = "0.5.6", features = ["desktop", "router"] }
+dioxus-logger = "0.5.0"
+dioxus-sdk = { version = "0.5.0", features = ["clipboard", "storage"] }
+image = { version = "0.25.2", features = ["png"] }
 serde = { version = "1.0.204", features = ["derive"] }
 serde_json = { version = "1.0.121" }
+tokio = { version = "1.39.2" }
+tracing = "0.1.40"
 # Time
 time = { version = "0.3.36", features = [
 	"serde",
@@ -19,3 +28,4 @@ time = { version = "0.3.36", features = [
 ] }
 ureq = { version = "2.10.0", features = ["json", "cookies", "charset"] }
 url = { version = "2.5.2" }
+window-vibrancy = "0.5.1"
