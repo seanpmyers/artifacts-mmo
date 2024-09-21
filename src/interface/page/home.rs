@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
 use crate::{
-    api::v1::status::{handler::call_get_status, StatusResponse},
+    api::v1::status::{handler::call_get_status, ServerStatus, StatusResponse},
     interface::app::APPLICATION_STATE,
 };
 
@@ -25,7 +25,15 @@ pub fn Home() -> Element {
                     let server_status_option: Option<StatusResponse> =
                         call_get_status(&mut http_client);
                     match server_status_option {
-                    Some(status) => server_status.set(format!(
+                        Some(status) => {
+                            if status.data.status == "online" {
+                                APPLICATION_STATE.write().artifacts_server_status =
+                                    ServerStatus::Online;
+                            } else {
+                                APPLICATION_STATE.write().artifacts_server_status =
+                                    ServerStatus::Offline;
+                            }
+                            server_status.set(format!(
                         "Version: {}\nStatus: {}\nCharacters Online: {}\nLast Wipe: {}\nNext Wipe: {}\nAnnouncements: {}",
                         status.data.version,
                         status.data.status,
@@ -33,9 +41,10 @@ pub fn Home() -> Element {
                         status.data.last_wipe,
                         status.data.next_wipe,
                         serde_json::to_string_pretty(&status.data.announcements).unwrap_or("None".to_string())
-                    )),
-                    None => server_status.set("Offline".to_string()),
-                }
+                    ));
+                        }
+                        None => server_status.set("Offline".to_string()),
+                    }
                     last_updated = tokio::time::Instant::now();
                     time_to_update = false;
                     tokio::time::sleep(std::time::Duration::from_secs(1)).await;
@@ -62,7 +71,13 @@ pub fn Home() -> Element {
         let mut http_client: ureq::Agent = ureq::AgentBuilder::new().build();
         let server_status_option: Option<StatusResponse> = call_get_status(&mut http_client);
         match server_status_option {
-            Some(status) => server_status.set(format!(
+            Some(status) => {
+                if status.data.status == "online" {
+                    APPLICATION_STATE.write().artifacts_server_status = ServerStatus::Online;
+                } else {
+                    APPLICATION_STATE.write().artifacts_server_status = ServerStatus::Offline;
+                }
+                server_status.set(format!(
                 "Version: {}\nStatus: {}\nCharacters Online: {}\nLast Wipe: {}\nNext Wipe: {}\nAnnouncements: {}",
                 status.data.version,
                 status.data.status,
@@ -70,7 +85,8 @@ pub fn Home() -> Element {
                 status.data.last_wipe,
                 status.data.next_wipe,
                 serde_json::to_string_pretty(&status.data.announcements).unwrap_or("None".to_string())
-            )),
+            ));
+            }
             None => server_status.set("Offline".to_string()),
         }
     };

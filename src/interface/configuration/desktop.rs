@@ -5,7 +5,7 @@ use tracing::info;
 
 use crate::constants::ARTIFACTS_MMO;
 
-pub const HEAD_HTML: &str = r#"<link rel="stylesheet" href="assets/main.css">"#;
+pub const HEAD_HTML: &str = r#"<link rel="stylesheet" href="main.css">"#;
 
 pub fn configure_dioxus_desktop() -> Config {
     let icon_path: &Path = Path::new("assets/logo.png");

@@ -33,3 +33,10 @@ pub struct Announcements {
     pub message: String,
     pub created_at: String,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub enum ServerStatus {
+    Online,
+    Unknown,
+    Offline,
+}

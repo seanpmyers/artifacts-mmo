@@ -7,7 +7,7 @@ use window_vibrancy::apply_acrylic;
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
 use super::style::theme::Theme;
-use crate::interface::router::route::Route;
+use crate::{api::v1::status::ServerStatus, interface::router::route::Route};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ApplicationState {
@@ -17,6 +17,7 @@ pub struct ApplicationState {
     pub full_timestamp_shorthand: String,
     pub session_start: DateTime<chrono::Local>,
     pub timezone: String,
+    pub artifacts_server_status: ServerStatus,
 }
 
 pub static APPLICATION_STATE: GlobalSignal<ApplicationState> =
@@ -27,6 +28,7 @@ pub static APPLICATION_STATE: GlobalSignal<ApplicationState> =
         timezone: iana_time_zone::get_timezone().unwrap_or("Unknown Timezone".to_string()),
         full_day_month_date: "".to_string(),
         full_timestamp_shorthand: "".to_string(),
+        artifacts_server_status: ServerStatus::Unknown,
     });
 
 #[component]
@@ -47,6 +49,6 @@ pub fn App() -> Element {
     use_future(|| async move {});
 
     rsx! {
-			Router::<Route> {}
-		}
+        Router::<Route> {}
+    }
 }

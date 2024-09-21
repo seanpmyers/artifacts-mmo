@@ -21,8 +21,6 @@ fn main() -> Result<()> {
     configure_logging()?;
     info!("RUN STARTED");
 
-    let mut http_client: ureq::Agent = ureq::AgentBuilder::new().build();
-
     // start_playing(&mut http_client, api_token);
     dioxus_logger::init(Level::DEBUG).expect("failed to initialize logger");
     dioxus_sdk::storage::set_dir!();
