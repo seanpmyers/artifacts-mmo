@@ -23,7 +23,7 @@ pub const CREATE_CHARACTER: ApiEndpoint = ApiEndpoint {
     http_request_method: HttpRequestMethod::POST,
 };
 
-#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum Skin {
     Men1,
@@ -120,7 +120,7 @@ pub struct Character {
     pub task_total: i32,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct InventorySlot {
     pub slot: i32,
     pub code: String,

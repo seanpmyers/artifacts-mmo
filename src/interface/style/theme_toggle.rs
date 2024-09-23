@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::interface::{app::APPLICATION_STATE, style::theme::Theme};
+use crate::interface::{app::APPLICATION_STATE, icon::THEME_TOGGLE_SVG, style::theme::Theme};
 
 pub const LIGHT: &str = "light";
 pub const DEFAULT_TOGGLE_TITLE: &str = "Switch color theme";
@@ -18,7 +18,8 @@ pub fn ThemeToggle() -> Element {
                     Theme::Light => Theme::Dark,
                 }
             },
-            "Theme Toggle"
+            class: "icon ",
+            dangerous_inner_html: THEME_TOGGLE_SVG
         }
     }
 }

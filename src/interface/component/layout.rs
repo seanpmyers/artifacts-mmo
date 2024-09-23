@@ -1,11 +1,8 @@
 use dioxus::prelude::*;
 
-use crate::{
-    api::v1::status::ServerStatus,
-    interface::{
-        app::APPLICATION_STATE, icon::HOME_SVG, router::route::Route,
-        style::theme_toggle::ThemeToggle,
-    },
+use crate::interface::{
+    app::APPLICATION_STATE, router::route::Route, style::theme_toggle::ThemeToggle,
+    widget::server_status::ServerStatus,
 };
 
 #[component]
@@ -18,18 +15,24 @@ pub fn Layout() -> Element {
             ),
             div { class: "top-nav",
                 h3 { class: "top-nav-heading", "Artifacts-MMO" }
-                span { class: format!("online-status {}", match APPLICATION_STATE().artifacts_server_status {
-                    ServerStatus::Online => "green",
-                    ServerStatus::Offline => "red",
-                    ServerStatus::Unknown => "gray"
-                })}
+                ServerStatus {}
                 ThemeToggle {}
             }
             div { class: "side-nav",
                 div { class: "side-nav-container",
                     Link { class: "button side-nav-item", to: Route::Home {},
-                        div { class: "icon", dangerous_inner_html: HOME_SVG }
+                        img {
+                            class: "image-icon",
+                            src: "assets/images/chicken.png"
+                        }
                         span { "Home" }
+                    }
+                    Link { class: "button side-nav-item", to: Route::Characters {},
+                        img {
+                            class: "image-icon",
+                            src: "assets/images/men1.png"
+                        }
+                        span { "Characters" }
                     }
                 }
             }

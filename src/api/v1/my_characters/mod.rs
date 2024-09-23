@@ -58,7 +58,7 @@ pub struct GetMyCharactersResponse {
     pub data: Vec<MyCharacters>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct MyCharacters {
     pub name: String,
     pub skin: Skin,

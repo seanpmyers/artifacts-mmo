@@ -1,5 +1,7 @@
 pub mod handler;
 
+use core::fmt;
+
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -39,4 +41,14 @@ pub enum ServerStatus {
     Online,
     Unknown,
     Offline,
+}
+
+impl fmt::Display for ServerStatus {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ServerStatus::Online => write!(formatter, "Online"),
+            ServerStatus::Unknown => write!(formatter, "Unknown"),
+            ServerStatus::Offline => write!(formatter, "Offline"),
+        }
+    }
 }
