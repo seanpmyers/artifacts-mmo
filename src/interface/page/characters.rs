@@ -1,27 +1,37 @@
+use chrono::{DateTime, Local, TimeDelta};
 use dioxus::prelude::*;
 use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
-use crate::api::v1::my_characters::{handler::call_get_my_characters, MyCharacters};
+use crate::api::v1::my_characters::handler::call_get_my_characters;
+use crate::constants::css::{CANVAS, MY_CHARACTERS};
+use crate::interface::app::{ApplicationState, APPLICATION_STATE};
 use crate::interface::component::character::Character;
-
-pub const CANVAS_CLASS: &str = "canvas";
 
 #[component]
 pub fn Characters() -> Element {
     let api_key: Signal<String> =
         use_synced_storage::<LocalStorage, String>("api_key".to_string(), String::new);
 
-    let mut characters: Signal<Vec<MyCharacters>> = use_signal(std::vec::Vec::new);
+    let mut last_updated: Signal<DateTime<Local>> = use_signal(Local::now);
 
     use_future(move || async move {
-        get_user_characters(&api_key(), &mut characters).await;
+        if APPLICATION_STATE().characters.is_empty()
+            || Local::now() - last_updated() >= TimeDelta::hours(1)
+        {
+            get_user_characters(
+                &api_key(),
+                &mut APPLICATION_STATE.signal(),
+                &mut last_updated,
+            )
+            .await;
+        }
     });
 
     rsx! {
-        div { class: CANVAS_CLASS,
+        div { class: CANVAS,
             h1 { class: "artifacts-header", "Characters" }
-            div {
-                for character in characters() {
+            div { class: MY_CHARACTERS,
+                for character in APPLICATION_STATE().characters {
                     Character { character }
                 }
             }
@@ -29,9 +39,14 @@ pub fn Characters() -> Element {
     }
 }
 
-pub async fn get_user_characters(api_key: &str, characters: &mut Signal<Vec<MyCharacters>>) {
+pub async fn get_user_characters(
+    api_key: &str,
+    app_state: &mut Signal<ApplicationState>,
+    last_updated: &mut Signal<DateTime<Local>>,
+) {
     let mut http_client: ureq::Agent = ureq::AgentBuilder::new().build();
     if let Some(my_characters) = call_get_my_characters(&mut http_client, &api_key.to_string()) {
-        characters.set(my_characters)
+        app_state.write().characters = my_characters;
+        last_updated.set(Local::now());
     }
 }

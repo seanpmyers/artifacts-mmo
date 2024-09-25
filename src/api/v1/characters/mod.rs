@@ -1,3 +1,5 @@
+use core::fmt;
+
 use log::info;
 use serde::{Deserialize, Serialize};
 
@@ -32,6 +34,19 @@ pub enum Skin {
     Women1,
     Women2,
     Women3,
+}
+
+impl fmt::Display for Skin {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Skin::Men1 => write!(formatter, "men1"),
+            Skin::Men2 => write!(formatter, "men2"),
+            Skin::Men3 => write!(formatter, "men3"),
+            Skin::Women1 => write!(formatter, "women1"),
+            Skin::Women2 => write!(formatter, "women2"),
+            Skin::Women3 => write!(formatter, "women3"),
+        }
+    }
 }
 
 pub struct GetCharactersResponse {

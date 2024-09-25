@@ -82,12 +82,17 @@
 
 @font-face {
 	font-family: "Inter";
-	src: url("assets/fonts/Inter/Inter-Italic-VariableFont_opsz,wght.ttf");
+	src: url("/assets/fonts/Inter/Inter-Italic-VariableFont_opsz,wght.ttf");
 }
 
 @font-face {
 	font-family: "Jetbrains Mono";
-	src: url("assets/fonts/JetBrainsMono-2.304/fonts/variable/JetBrainsMono[wght].ttf");
+	src: url("/assets/fonts/JetBrainsMono-2.304/fonts/variable/JetBrainsMono[wght].ttf");
+}
+
+@font-face {
+	font-family: "Upheaval TT (BRK) Regular";
+	src: url("/assets/fonts/upheaval-tt-brk/upheavtt.ttf")
 }
 
 html {
@@ -283,6 +288,11 @@ p {
 	border: 1px solid transparent;
 }
 
+.character-image {
+	width: 36px;
+	height: 36px;
+}
+
 .image-icon {
 	width: 18px;
 	height: 18px;
@@ -423,4 +433,8 @@ p {
 .artifacts-header {
 	font-family: var(--artifacts-font-family);
 	font-weight: 100;
+}
+
+.my-characters {
+	display: flex;
 }

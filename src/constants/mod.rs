@@ -1,3 +1,5 @@
+pub mod css;
+
 pub mod api {
     pub const ARTIFACTS_MMO_HOST: &str = "api.artifactsmmo.com";
 }

@@ -1,3 +1,4 @@
+use crate::interface::app::APPLICATION_STATE;
 use crate::interface::{component::layout::Layout, page::characters::Characters, page::home::Home};
 use dioxus::prelude::*;
 

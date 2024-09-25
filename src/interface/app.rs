@@ -7,9 +7,12 @@ use window_vibrancy::apply_acrylic;
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
 use super::style::theme::Theme;
-use crate::{api::v1::status::ServerStatus, interface::router::route::Route};
+use crate::{
+    api::v1::{my_characters::MyCharacters, status::ServerStatus},
+    interface::router::route::Route,
+};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ApplicationState {
     pub current_theme: Theme,
     pub date_time: DateTime<chrono::Local>,
@@ -18,6 +21,7 @@ pub struct ApplicationState {
     pub session_start: DateTime<chrono::Local>,
     pub timezone: String,
     pub artifacts_server_status: ServerStatus,
+    pub characters: Vec<MyCharacters>,
 }
 
 pub static APPLICATION_STATE: GlobalSignal<ApplicationState> =
@@ -29,6 +33,7 @@ pub static APPLICATION_STATE: GlobalSignal<ApplicationState> =
         full_day_month_date: "".to_string(),
         full_timestamp_shorthand: "".to_string(),
         artifacts_server_status: ServerStatus::Unknown,
+        characters: Vec::new(),
     });
 
 #[component]
