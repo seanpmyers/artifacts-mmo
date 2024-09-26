@@ -1,5 +1,7 @@
-use crate::interface::app::APPLICATION_STATE;
-use crate::interface::{component::layout::Layout, page::characters::Characters, page::home::Home};
+use crate::interface::{
+    component::layout::Layout, page::characters::Characters, page::home::Home,
+    page::monsters::Monsters,
+};
 use dioxus::prelude::*;
 
 #[derive(Clone, Routable, Debug, PartialEq)]
@@ -9,6 +11,8 @@ pub enum Route {
     Home {},
     #[route("/characters")]
     Characters {},
+    #[route("/monsters")]
+    Monsters {},
     #[end_layout]
     #[route("/:..route")]
     PageNotFound { route: Vec<String> },

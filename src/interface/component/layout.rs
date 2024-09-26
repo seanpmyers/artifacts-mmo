@@ -1,8 +1,8 @@
 use dioxus::prelude::*;
 
 use crate::interface::{
-    app::APPLICATION_STATE, router::route::Route, style::theme_toggle::ThemeToggle,
-    widget::server_status::ServerStatus,
+    app::APPLICATION_STATE, component::navigation::SideNavigation, router::route::Route,
+    style::theme_toggle::ThemeToggle, widget::server_status::ServerStatus,
 };
 
 #[component]
@@ -18,24 +18,7 @@ pub fn Layout() -> Element {
                 ServerStatus {}
                 ThemeToggle {}
             }
-            div { class: "side-nav",
-                div { class: "side-nav-container",
-                    Link { class: "button side-nav-item", to: Route::Home {},
-                        img {
-                            class: "image-icon",
-                            src: "assets/images/chicken.png"
-                        }
-                        span { "Home" }
-                    }
-                    Link { class: "button side-nav-item", to: Route::Characters {},
-                        img {
-                            class: "image-icon",
-                            src: "assets/images/men1.png"
-                        }
-                        span { "Characters" }
-                    }
-                }
-            }
+            SideNavigation {}
             main { class: "", Outlet::<Route> {} }
         }
     }

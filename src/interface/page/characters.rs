@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
 use crate::api::v1::my_characters::handler::call_get_my_characters;
-use crate::constants::css::{CANVAS, MY_CHARACTERS};
+use crate::constants::css::{ARTIFACTS_HEADER, CANVAS, MY_CHARACTERS};
 use crate::interface::app::{ApplicationState, APPLICATION_STATE};
 use crate::interface::component::character::Character;
 
@@ -29,7 +29,7 @@ pub fn Characters() -> Element {
 
     rsx! {
         div { class: CANVAS,
-            h1 { class: "artifacts-header", "Characters" }
+            h1 { class: ARTIFACTS_HEADER, "Characters" }
             div { class: MY_CHARACTERS,
                 for character in APPLICATION_STATE().characters {
                     Character { character }
