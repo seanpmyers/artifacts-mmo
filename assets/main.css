@@ -2,7 +2,7 @@
 	--text: #e0f5ef;
 	--background: rgba(0, 0, 0, 0.2);
 	--primary: rgba(28, 28, 28, 0.75);
-	--secondary: #103227;
+	--secondary: #4e4f4f;
 	--accent: #48c7a1;
 
 	--glass: rgba(255, 255, 255, 0.2);
@@ -38,7 +38,7 @@
 	--text: #e0f5ef;
 	--background: transparent;
 	--primary: rgba(255, 255, 255, 0.3);
-	--secondary: #cdefe4;
+	--secondary: #4e4f4f;
 	--accent: #38b791;
 
 	--glass: rgba(103, 208, 177, 0.2);
@@ -192,6 +192,14 @@ p {
 	border-radius: var(--border-radius);
 	background: var(--primary);
 	color: var(--text);
+}
+
+.on-canvas {
+	background: var(--secondary);
+	padding: var(--padding);
+	margin: var(--margin);
+	border: var(--border);
+	border-radius: var(--border-radius);
 }
 
 .button {
@@ -399,20 +407,22 @@ p {
 	height: 8px;
 	border-radius: 50%;
 	/* green color */
-	box-shadow: 0 0 5px rgba(52, 199, 89, 0.5);
 	/* glow effect */
 }
 
 .green {
-	background-color: #34C759;
+	box-shadow: 0 0 5px rgba(52, 199, 89, 0.5);
+	background-color: rgb(52, 199, 89);
 }
 
 .red {
-	background-color: #c73434;
+	box-shadow: 0 0 5px rgba(199, 52, 52, 0.5);
+	background-color: rgb(199, 52, 52);
 }
 
 .gray {
-	background-color: #787c79;
+	box-shadow: 0 0 5px rgba(120, 124, 121, 0.5);
+	background-color: rgb(120, 124, 121);
 }
 
 .server-status {
