@@ -37,3 +37,31 @@ pub const THEME_TOGGLE_SVG: SvgIcon = r#"
 		d="M7.5 2c-1.79 1.15-3 3.18-3 5.5s1.21 4.35 3.03 5.5C4.46 13 2 10.54 2 7.5A5.5 5.5 0 0 1 7.5 2m11.57 1.5l1.43 1.43L4.93 20.5L3.5 19.07zm-6.18 2.43L11.41 5L9.97 6l.42-1.7L9 3.24l1.75-.12l.58-1.65L12 3.1l1.73.03l-1.35 1.13zm-3.3 3.61l-1.16-.73l-1.12.78l.34-1.32l-1.09-.83l1.36-.09l.45-1.29l.51 1.27l1.36.03l-1.05.87zM19 13.5a5.5 5.5 0 0 1-5.5 5.5c-1.22 0-2.35-.4-3.26-1.07l7.69-7.69c.67.91 1.07 2.04 1.07 3.26m-4.4 6.58l2.77-1.15l-.24 3.35zm4.33-2.7l1.15-2.77l2.2 2.54zm1.15-4.96l-1.14-2.78l3.34.24zM9.63 18.93l2.77 1.15l-2.53 2.19z" />
 </svg>
 "#;
+
+pub const MUTED_SVG: SvgIcon = r#"
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+	<rect width="256" height="256" fill="none" />
+	<path d="M80,168H32a8,8,0,0,1-8-8V96a8,8,0,0,1,8-8H80l72-56V224Z" fill="none"
+		stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="16" />
+	<line x1="240" y1="104" x2="192" y2="152" fill="none" stroke="currentColor" stroke-linecap="round"
+		stroke-linejoin="round" stroke-width="16" />
+	<line x1="240" y1="152" x2="192" y2="104" fill="none" stroke="currentColor" stroke-linecap="round"
+		stroke-linejoin="round" stroke-width="16" />
+	<line x1="80" y1="88" x2="80" y2="168" fill="none" stroke="currentColor" stroke-linecap="round"
+		stroke-linejoin="round" stroke-width="16" />
+</svg>
+"#;
+
+pub const SOUND_ON_SVG: SvgIcon = r#"
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+	<rect width="256" height="256" fill="none" />
+	<path d="M80,168H32a8,8,0,0,1-8-8V96a8,8,0,0,1,8-8H80l72-56V224Z" fill="none"
+		stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="16" />
+	<line x1="80" y1="88" x2="80" y2="168" fill="none" stroke="currentColor" stroke-linecap="round"
+		stroke-linejoin="round" stroke-width="16" />
+	<path d="M192,106.85a32,32,0,0,1,0,42.3" fill="none" stroke="currentColor" stroke-linecap="round"
+		stroke-linejoin="round" stroke-width="16" />
+	<path d="M221.67,80a72,72,0,0,1,0,96" fill="none" stroke="currentColor" stroke-linecap="round"
+		stroke-linejoin="round" stroke-width="16" />
+</svg>
+"#;

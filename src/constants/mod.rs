@@ -9,3 +9,5 @@ pub mod environment_variables {
 }
 
 pub const ARTIFACTS_MMO: &str = "Artifacts-MMO";
+
+pub const BUTTON_CLICK_SOUND_PATH: &str = "assets/sound/navigation_hover-tap.wav";

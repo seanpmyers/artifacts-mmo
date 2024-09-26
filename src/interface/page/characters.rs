@@ -14,6 +14,8 @@ pub fn Characters() -> Element {
 
     let mut last_updated: Signal<DateTime<Local>> = use_signal(Local::now);
 
+    let mut search: Signal<String> = use_signal(String::new);
+
     use_future(move || async move {
         if APPLICATION_STATE().characters.is_empty()
             || Local::now() - last_updated() >= TimeDelta::hours(1)

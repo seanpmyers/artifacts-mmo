@@ -4,6 +4,7 @@ pub const BUTTON: CSS = "button";
 pub const CANVAS: CSS = "canvas";
 pub const ON_CANVAS: CSS = "on-canvas";
 pub const CHARACTER_IMAGE: CSS = "character-image";
+pub const ICON: CSS = "icon";
 pub const IMAGE_ICON: CSS = "image-icon";
 pub const MY_CHARACTERS: CSS = "my-characters";
 pub const ARTIFACTS_HEADER: CSS = "artifacts-header";
