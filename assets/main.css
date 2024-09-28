@@ -82,7 +82,7 @@
 
 @font-face {
 	font-family: "Inter";
-	src: url("/assets/fonts/Inter/Inter-Italic-VariableFont_opsz,wght.ttf");
+	src: url("/assets/fonts/Inter/Inter-VariableFont_opsz,wght.ttf");
 }
 
 @font-face {
@@ -171,7 +171,6 @@ main {
 input {
 	border: solid 1px transparent;
 	background-color: var(--background);
-	width: 100%;
 }
 
 p {

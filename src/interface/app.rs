@@ -1,13 +1,17 @@
 use std::{
     collections::HashMap,
     fs::File,
-    io::{BufReader, Read},
+    io::{Cursor, Read},
 };
 
 use chrono::DateTime;
 use dioxus::{desktop::use_window, prelude::*};
 
-use rodio::Source;
+use kira::{
+    manager::{AudioManager, AudioManagerSettings, DefaultBackend},
+    sound::static_sound::StaticSoundData,
+};
+use tracing::{debug, error, info};
 #[cfg(target_os = "windows")]
 use window_vibrancy::apply_acrylic;
 #[cfg(target_os = "macos")]
@@ -16,7 +20,7 @@ use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 use super::style::theme::Theme;
 use crate::{
     api::v1::{my_characters::MyCharacters, status::ServerStatus},
-    constants::BUTTON_CLICK_SOUND_PATH,
+    constants::{AUDIO_PATHS, BUTTON_CLICK_SOUND, HERO_SIMPLE_CELEBRATION_03_SOUND},
     interface::router::route::Route,
 };
 
@@ -70,8 +74,9 @@ pub fn App() -> Element {
     )
     .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
 
-    use_future(|| async move {
+    use_future(move || async move {
         load_sounds();
+        play_hero_simple_celebration_03();
     });
 
     rsx! {
@@ -79,21 +84,44 @@ pub fn App() -> Element {
     }
 }
 
+pub enum Action {
+    PlaySound(Vec<u8>),
+}
+
 pub fn load_sounds() {
-    let mut file: File = File::open(BUTTON_CLICK_SOUND_PATH).unwrap();
-    let mut sound_bytes: Vec<u8> = Vec::new();
-    file.read_to_end(&mut sound_bytes).unwrap();
-    ASSETS
-        .write()
-        .sounds
-        .insert("button_click".to_string(), sound_bytes);
+    for (path, key) in AUDIO_PATHS {
+        let mut file: File = File::open(path).unwrap();
+        let mut sound_bytes: Vec<u8> = Vec::new();
+        file.read_to_end(&mut sound_bytes).unwrap();
+        ASSETS.write().sounds.insert(key.to_string(), sound_bytes);
+    }
+    debug!("Sounds loaded.");
 }
 
 pub fn play_sound(sound_bytes: Vec<u8>) {
-    let cursor = std::io::Cursor::new(sound_bytes);
-    let sound = rodio::Decoder::new(cursor).unwrap();
-    let (_stream, handle) = rodio::OutputStream::try_default().unwrap();
-    let sink: rodio::Sink = rodio::Sink::try_new(&handle).unwrap();
-    sink.append(sound);
-    sink.sleep_until_end();
+    let cursor: Cursor<Vec<u8>> = Cursor::new(sound_bytes);
+    let mut manager: AudioManager =
+        AudioManager::<DefaultBackend>::new(AudioManagerSettings::default()).unwrap();
+    let sound_data: StaticSoundData = StaticSoundData::from_cursor(cursor).unwrap();
+    manager.play(sound_data.clone()).unwrap();
+}
+
+pub fn play_button_click_sound() {
+    if !APPLICATION_STATE().sound_on {
+        return;
+    }
+    if let Some(sound_bytes) = ASSETS.read().sounds.get(BUTTON_CLICK_SOUND) {
+        let sound_bytes: Vec<u8> = (*sound_bytes).clone();
+        play_sound(sound_bytes);
+    }
+}
+
+pub fn play_hero_simple_celebration_03() {
+    if !APPLICATION_STATE().sound_on {
+        return;
+    }
+    if let Some(sound_bytes) = ASSETS.read().sounds.get(HERO_SIMPLE_CELEBRATION_03_SOUND) {
+        let sound_bytes: Vec<u8> = (*sound_bytes).clone();
+        play_sound(sound_bytes);
+    }
 }

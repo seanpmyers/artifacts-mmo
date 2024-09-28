@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 
 use crate::{
     constants::css::{BUTTON, IMAGE_ICON, SIDE_NAV, SIDE_NAV_CONTAINER, SIDE_NAV_ITEM},
-    interface::router::route::Route,
+    interface::{app::play_button_click_sound, router::route::Route},
 };
 
 #[derive(Clone, PartialEq)]
@@ -37,22 +37,25 @@ pub fn SideNavigation() -> Element {
         },
     ];
     rsx! {
-			div { class: SIDE_NAV,
-				div { class: SIDE_NAV_CONTAINER,
-					for item in navigation_items {
-						SideNavigationLink { item }
-					}
-				}
-			}
-		}
+        div { class: SIDE_NAV,
+            div { class: SIDE_NAV_CONTAINER,
+                for item in navigation_items {
+                    SideNavigationLink { item }
+                }
+            }
+        }
+    }
 }
 
 #[component]
 pub fn SideNavigationLink(item: SideNavigationItem) -> Element {
     rsx! {
-			Link { class: item.link_css, to: item.route,
-				img { class: IMAGE_ICON, src: item.image_src }
-				span { "{item.title}" }
-			}
-		}
+        Link {
+            class: item.link_css,
+            to: item.route,
+            onclick: |_| { play_button_click_sound() },
+            img { class: IMAGE_ICON, src: item.image_src }
+            span { "{item.title}" }
+        }
+    }
 }

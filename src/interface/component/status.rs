@@ -2,8 +2,8 @@ use dioxus::prelude::*;
 
 use crate::{
     api::v1::status::{handler::call_get_status, ServerStatus},
-    constants::css::CANVAS,
-    interface::{app::APPLICATION_STATE, icon::CLOUD_ARROW_DOWNLOAD},
+    constants::css::{CANVAS, IMAGE_ICON},
+    interface::{app::APPLICATION_STATE, widget::audible_button::AudibleButton},
 };
 
 #[component]
@@ -39,10 +39,11 @@ pub fn Status() -> Element {
             div { class: CANVAS,
                 div {
                     label { "Server Status" }
-                    button {
-                        onclick: refresh_status,
-                        class: "icon ",
-                        dangerous_inner_html: CLOUD_ARROW_DOWNLOAD
+                    AudibleButton { onclick: refresh_status, tooltip: "Refresh status".to_string(),
+                        img {
+                            class: IMAGE_ICON,
+                            src: "assets/images/refresh.png"
+                        }
                     }
                     label { "Next refresh in: {next_server_status_refresh}s" }
                 }

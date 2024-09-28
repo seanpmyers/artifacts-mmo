@@ -9,13 +9,18 @@ chrono = { version = "0.4.38", features = ["serde"] }
 chrono-tz = { version = "0.9.0", features = ["serde"] }
 iana-time-zone = "0.1.60"
 env_logger = "0.11.5"
+futures-util = "0.3.30"
 # Logging
 log = { version = "0.4.22", features = ["serde"] }
 dioxus = { version = "0.5.6", features = ["desktop", "router"] }
 dioxus-logger = "0.5.0"
-dioxus-sdk = { version = "0.5.0", features = ["clipboard", "storage"] }
+dioxus-sdk = { version = "0.5.0", features = [
+	"clipboard",
+	"storage",
+	"web-sys",
+] }
+kira = "0.9.5"
 image = { version = "0.25.2", features = ["png"] }
-rodio = "0.19.0"
 serde = { version = "1.0.204", features = ["derive"] }
 serde_json = { version = "1.0.121" }
 tokio = { version = "1.39.2" }

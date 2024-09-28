@@ -1,11 +1,9 @@
 use dioxus::prelude::*;
 
 use crate::{
-    constants::css::ICON,
+    constants::css::IMAGE_ICON,
     interface::{
-        app::{play_sound, APPLICATION_STATE, ASSETS},
-        icon::THEME_TOGGLE_SVG,
-        style::theme::Theme,
+        app::APPLICATION_STATE, style::theme::Theme, widget::audible_button::AudibleButton,
     },
 };
 
@@ -16,7 +14,7 @@ pub const BUTTON_CLASS: &str = "theme-toggle";
 #[component]
 pub fn ThemeToggle() -> Element {
     rsx! {
-        button {
+        AudibleButton {
             onclick: move |_| {
                 APPLICATION_STATE
                     .write()
@@ -24,18 +22,12 @@ pub fn ThemeToggle() -> Element {
                     Theme::Dark => Theme::Light,
                     Theme::Light => Theme::Dark,
                 };
-                if !APPLICATION_STATE().sound_on {
-                    return;
-                }
-                if let Some(sound_bytes) = ASSETS.read().sounds.get("button_click") {
-                    let sound_bytes = (*sound_bytes).clone();
-                    std::thread::spawn(move || {
-                        play_sound(sound_bytes);
-                    });
-                }
             },
-            class: ICON,
-            dangerous_inner_html: THEME_TOGGLE_SVG
+            tooltip: match APPLICATION_STATE().current_theme {
+                Theme::Dark => "Enable light mode".to_string(),
+                Theme::Light => "Enable dark mode".to_string(),
+            },
+            img { class: IMAGE_ICON, src: "assets/images/theme_toggle.png" }
         }
     }
 }
