@@ -7,6 +7,7 @@ pub const CHARACTER_IMAGE: CSS = "character-image";
 pub const ICON: CSS = "icon";
 pub const IMAGE_ICON: CSS = "image-icon";
 pub const MY_CHARACTERS: CSS = "my-characters";
+pub const CHARACTER: CSS = "character";
 pub const ARTIFACTS_HEADER: CSS = "artifacts-header";
 pub const SIDE_NAV: CSS = "side-nav";
 pub const SIDE_NAV_CONTAINER: CSS = "side-nav-container";

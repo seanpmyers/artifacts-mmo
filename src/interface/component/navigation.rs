@@ -16,7 +16,7 @@ pub struct SideNavigationItem {
 #[component]
 pub fn SideNavigation() -> Element {
     let link_css: [&str; 2] = [BUTTON, SIDE_NAV_ITEM];
-    let navigation_items: [SideNavigationItem; 3] = [
+    let navigation_items: [SideNavigationItem; 4] = [
         SideNavigationItem {
             route: Route::Home {},
             link_css: link_css.join(" "),
@@ -34,6 +34,12 @@ pub fn SideNavigation() -> Element {
             link_css: link_css.join(" "),
             image_src: "assets/images/cultist_emperor.png",
             title: "Monsters",
+        },
+        SideNavigationItem {
+            route: Route::Map {},
+            link_css: link_css.join(" "),
+            image_src: "assets/images/ash_tree.png",
+            title: "Map",
         },
     ];
     rsx! {

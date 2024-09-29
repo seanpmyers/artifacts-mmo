@@ -446,4 +446,11 @@ p {
 
 .my-characters {
 	display: flex;
+	flex-wrap: wrap;
+}
+
+.character {
+	flex: 1;
+	max-width: 224px;
+	width: 10vw;
 }
