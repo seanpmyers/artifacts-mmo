@@ -5,13 +5,16 @@ use std::{
 };
 
 use chrono::DateTime;
-use dioxus::{desktop::use_window, prelude::*};
+use dioxus::{
+    desktop::{tao::window::Window, use_window},
+    prelude::*,
+};
 
 use kira::{
     manager::{AudioManager, AudioManagerSettings, DefaultBackend},
     sound::static_sound::StaticSoundData,
 };
-use tracing::{debug, error, info};
+use tracing::debug;
 #[cfg(target_os = "windows")]
 use window_vibrancy::apply_acrylic;
 #[cfg(target_os = "macos")]
@@ -61,18 +64,7 @@ pub static ASSETS: GlobalSignal<Assets> = Signal::global(|| Assets {
 
 #[component]
 pub fn App() -> Element {
-    #[cfg(target_os = "windows")]
-    apply_acrylic(&use_window().window, Some((18, 18, 18, 125)))
-        .expect("Unsupported platform! 'apply_blur' is only supported on Windows");
-
-    #[cfg(target_os = "macos")]
-    apply_vibrancy(
-        &use_window().window,
-        NSVisualEffectMaterial::HudWindow,
-        None,
-        None,
-    )
-    .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
+    blur_window(&use_window().window);
 
     use_future(move || async move {
         load_sounds();
@@ -124,4 +116,14 @@ pub fn play_hero_simple_celebration_03() {
         let sound_bytes: Vec<u8> = (*sound_bytes).clone();
         play_sound(sound_bytes);
     }
+}
+
+pub fn blur_window(window: &Window) {
+    #[cfg(target_os = "windows")]
+    apply_acrylic(window, Some((18, 18, 18, 125)))
+        .expect("Unsupported platform! 'apply_blur' is only supported on Windows");
+
+    #[cfg(target_os = "macos")]
+    apply_vibrancy(window, NSVisualEffectMaterial::HudWindow, None, None)
+        .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
 }

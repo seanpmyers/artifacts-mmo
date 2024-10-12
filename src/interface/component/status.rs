@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 
 use crate::{
     api::v1::status::{handler::call_get_status, ServerStatus},
-    constants::css::{CANVAS, IMAGE_ICON},
+    constants::css::{self},
     interface::{app::APPLICATION_STATE, widget::audible_button::AudibleButton},
 };
 
@@ -35,19 +35,21 @@ pub fn Status() -> Element {
     };
 
     rsx! {
-        div { class: CANVAS,
-            div { class: CANVAS,
+        div { class: css::CANVAS,
+            div { class: css::CANVAS,
                 div {
                     label { "Server Status" }
                     AudibleButton { onclick: refresh_status, tooltip: "Refresh status".to_string(),
                         img {
-                            class: IMAGE_ICON,
+                            class: css::IMAGE_ICON,
                             src: "assets/images/refresh.png"
                         }
                     }
                     label { "Next refresh in: {next_server_status_refresh}s" }
                 }
-                p { class: "code", "{server_status}" }
+                pre {
+                    code { class: css::CODE, language: "json", "{server_status}" }
+                }
             }
         }
     }
