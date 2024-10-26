@@ -9,7 +9,7 @@ use crate::{
 #[component]
 pub fn Status() -> Element {
     let mut server_status: Signal<String> = use_signal(|| "Offline".to_string());
-    let mut next_server_status_refresh: Signal<String> = use_signal(|| "".to_string());
+    let next_server_status_refresh: Signal<String> = use_signal(|| "".to_string());
 
     let refresh_status = move |_| {
         let mut http_client: ureq::Agent = ureq::AgentBuilder::new().build();

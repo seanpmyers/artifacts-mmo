@@ -1,4 +1,3 @@
-use chrono::{DateTime, Local, TimeDelta};
 use dioxus::prelude::*;
 use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
@@ -13,14 +12,15 @@ pub fn Characters() -> Element {
     let api_key: Signal<String> =
         use_synced_storage::<LocalStorage, String>("api_key".to_string(), String::new);
 
-    let mut last_updated: Signal<DateTime<Local>> = use_signal(Local::now);
-
     let mut search: Signal<String> = use_signal(String::new);
 
     let visible_characters: Memo<Vec<MyCharacters>> = use_memo(move || {
         let filtered_characters: Vec<MyCharacters> = APPLICATION_STATE
             .read()
             .characters
+            .data
+            .clone()
+            .map_or(Vec::new(), |characters| characters)
             .iter()
             .filter(|charater| charater.name.contains(&search()))
             .cloned()
@@ -30,15 +30,8 @@ pub fn Characters() -> Element {
     });
 
     use_future(move || async move {
-        if APPLICATION_STATE().characters.is_empty()
-            || Local::now() - last_updated() >= TimeDelta::hours(1)
-        {
-            get_user_characters(
-                &api_key(),
-                &mut APPLICATION_STATE.signal(),
-                &mut last_updated,
-            )
-            .await;
+        if APPLICATION_STATE().characters.is_out_of_sync() {
+            get_user_characters(&api_key(), &mut APPLICATION_STATE.signal()).await;
         }
     });
 
@@ -64,14 +57,9 @@ pub fn Characters() -> Element {
     }
 }
 
-pub async fn get_user_characters(
-    api_key: &str,
-    app_state: &mut Signal<ApplicationState>,
-    last_updated: &mut Signal<DateTime<Local>>,
-) {
+pub async fn get_user_characters(api_key: &str, app_state: &mut Signal<ApplicationState>) {
     let mut http_client: ureq::Agent = ureq::AgentBuilder::new().build();
     if let Some(my_characters) = call_get_my_characters(&mut http_client, &api_key.to_string()) {
-        app_state.write().characters = my_characters;
-        last_updated.set(Local::now());
+        app_state.write().characters.sync_now(my_characters);
     }
 }

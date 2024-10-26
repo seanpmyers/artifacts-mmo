@@ -22,7 +22,7 @@ use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
 use super::style::theme::Theme;
 use crate::{
-    api::v1::{my_characters::MyCharacters, status::ServerStatus},
+    api::v1::{maps::Map, my_characters::MyCharacters, status::ServerStatus},
     constants::{AUDIO_PATHS, BUTTON_CLICK_SOUND, HERO_SIMPLE_CELEBRATION_03_SOUND},
     interface::router::route::Route,
 };
@@ -30,7 +30,8 @@ use crate::{
 #[derive(Debug, Clone, PartialEq)]
 pub struct ApplicationState {
     pub artifacts_server_status: ServerStatus,
-    pub characters: Vec<MyCharacters>,
+    pub characters: Remote<Vec<MyCharacters>>,
+    pub map_tiles: Remote<Vec<Map>>,
     pub current_theme: Theme,
     pub date_time: DateTime<chrono::Local>,
     pub full_day_month_date: String,
@@ -54,7 +55,8 @@ pub static APPLICATION_STATE: GlobalSignal<ApplicationState> =
         full_day_month_date: "".to_string(),
         full_timestamp_shorthand: "".to_string(),
         artifacts_server_status: ServerStatus::Unknown,
-        characters: Vec::new(),
+        characters: Remote::default(),
+        map_tiles: Remote::default(),
         sound_on: true,
     });
 
@@ -126,4 +128,65 @@ pub fn blur_window(window: &Window) {
     #[cfg(target_os = "macos")]
     apply_vibrancy(window, NSVisualEffectMaterial::HudWindow, None, None)
         .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
+}
+
+pub const DEFAULT_SYNC_INTERVAL_MINUTES: u64 = 15_u64;
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Remote<T> {
+    pub data: Option<T>,
+    pub sync_state: SyncState,
+}
+
+impl<T> Remote<T> {
+    pub fn new(data: Option<T>, sync_interval: Option<std::time::Duration>) -> Self {
+        Remote {
+            data,
+            sync_state: SyncState::new(sync_interval),
+        }
+    }
+
+    pub fn default() -> Self {
+        Self::new(None, None)
+    }
+
+    pub fn is_out_of_sync(&self) -> bool {
+        self.data.is_none() || self.sync_state.is_out_of_sync()
+    }
+
+    pub fn sync_now(&mut self, data: T) {
+        self.sync_state.sync_now();
+        self.data = Some(data);
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct SyncState {
+    pub last_fetch: Option<std::time::Instant>,
+    pub sync_interval: std::time::Duration,
+}
+
+impl SyncState {
+    pub fn new(sync_interval: Option<std::time::Duration>) -> Self {
+        sync_interval.map_or(Self::default(), |value| SyncState {
+            last_fetch: None,
+            sync_interval: value,
+        })
+    }
+
+    pub fn default() -> Self {
+        SyncState {
+            last_fetch: None,
+            sync_interval: std::time::Duration::from_secs(DEFAULT_SYNC_INTERVAL_MINUTES * 60),
+        }
+    }
+
+    pub fn is_out_of_sync(&self) -> bool {
+        self.last_fetch
+            .map_or(true, |value| value.elapsed() >= self.sync_interval)
+    }
+
+    pub fn sync_now(&mut self) {
+        self.last_fetch = Some(std::time::Instant::now())
+    }
 }

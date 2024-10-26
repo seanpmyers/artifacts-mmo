@@ -2,7 +2,6 @@ use anyhow::Result;
 
 use configuration::configure_logging;
 
-use controller::start_playing;
 use interface::configuration::desktop::configure_dioxus_desktop;
 use log::info;
 
