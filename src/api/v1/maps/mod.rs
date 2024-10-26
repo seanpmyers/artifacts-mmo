@@ -1,3 +1,5 @@
+pub mod handler;
+
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -23,7 +25,7 @@ pub struct GetAllMapsResponse {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Map {
-    pub content: MapContent,
+    pub content: Option<MapContent>,
     pub name: String,
     pub skin: String,
     pub x: i32,

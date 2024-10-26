@@ -1,8 +1,9 @@
 use dioxus::prelude::*;
+use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
 use crate::{
     api::v1::{
-        maps::Map,
+        maps::{handler::get_all_maps, Map},
         resources::{get_image_url, ImageResourceType},
     },
     constants::css,
@@ -11,24 +12,20 @@ use crate::{
 
 #[component]
 pub fn Map() -> Element {
-    let tiles: Signal<Vec<Map>> = use_signal(Vec::new);
+    let api_key: Signal<String> =
+        use_synced_storage::<LocalStorage, String>("api_key".to_string(), String::new);
 
-    // use_future(move || async move {
-    //     if APPLICATION_STATE().map_tiles.is_out_of_sync() {
-    //         get_user_characters(
-    //             &api_key(),
-    //             &mut APPLICATION_STATE.signal(),
-    //             &mut last_updated,
-    //         )
-    //         .await;
-    //     }
-    // });
+    use_future(move || async move {
+        if APPLICATION_STATE().map_tiles.is_out_of_sync() {
+            get_map_tiles(&api_key(), &mut APPLICATION_STATE.signal()).await;
+        }
+    });
 
     rsx! {
         div { class: css::CANVAS,
             h1 { class: css::ARTIFACTS_HEADER, "Map" }
             div {
-                for tile in tiles() {
+                for tile in APPLICATION_STATE().map_tiles.data.map_or(Vec::new(), |map_tiles| map_tiles) {
                     MapTile { tile }
                 }
             }
@@ -44,9 +41,8 @@ pub fn MapTile(tile: Map) -> Element {
 }
 
 pub async fn get_map_tiles(api_key: &str, app_state: &mut Signal<ApplicationState>) {
-    // let mut http_client: ureq::Agent = ureq::AgentBuilder::new().build();
-    // if let Some(my_characters) = call_get_my_characters(&mut http_client, &api_key.to_string()) {
-    //     app_state.write().characters = my_characters;
-    //     last_updated.set(Local::now());
-    // }
+    let mut http_client: ureq::Agent = ureq::AgentBuilder::new().build();
+    if let Some(map_tiles) = get_all_maps(&mut http_client, &api_key.to_string()) {
+        app_state.write().map_tiles.sync_now(map_tiles);
+    }
 }
