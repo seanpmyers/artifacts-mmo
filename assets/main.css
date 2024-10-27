@@ -308,6 +308,11 @@ p {
 	height: 36px;
 }
 
+.map {
+	display: inline-flex;
+	flex-flow: wrap;
+}
+
 .map-tile {
 	width: 224px;
 	height: 224px;

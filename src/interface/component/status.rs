@@ -8,29 +8,31 @@ use crate::{
 
 #[component]
 pub fn Status() -> Element {
-    let mut server_status: Signal<String> = use_signal(|| "Offline".to_string());
     let next_server_status_refresh: Signal<String> = use_signal(|| "".to_string());
-
+    let server_status: Memo<String> = use_memo(move || {
+        if let Some(status) = APPLICATION_STATE().sever_status.data {
+            format!(
+                "Version: {}\nStatus: {}\nCharacters Online: {}\nLast Wipe: {}\nNext Wipe: {}\nAnnouncements: {}",
+                status.version,
+                status.status,
+                status.characters_online,
+                status.last_wipe,
+                status.next_wipe,
+                serde_json::to_string_pretty(&status.announcements).unwrap_or("None".to_string())
+            )
+        } else {
+            "Offline".to_string()
+        }
+    });
     let refresh_status = move |_| {
         let mut http_client: ureq::Agent = ureq::AgentBuilder::new().build();
-        match call_get_status(&mut http_client) {
-            Some(status) => {
-                if status.data.status == "online" {
-                    APPLICATION_STATE.write().artifacts_server_status = ServerStatus::Online;
-                } else {
-                    APPLICATION_STATE.write().artifacts_server_status = ServerStatus::Offline;
-                }
-                server_status.set(format!(
-                "Version: {}\nStatus: {}\nCharacters Online: {}\nLast Wipe: {}\nNext Wipe: {}\nAnnouncements: {}",
-                status.data.version,
-                status.data.status,
-                status.data.characters_online,
-                status.data.last_wipe,
-                status.data.next_wipe,
-                serde_json::to_string_pretty(&status.data.announcements).unwrap_or("None".to_string())
-            ));
+        if let Some(status) = call_get_status(&mut http_client) {
+            if status.data.status == "online" {
+                APPLICATION_STATE.write().artifacts_server_status = ServerStatus::Online;
+            } else {
+                APPLICATION_STATE.write().artifacts_server_status = ServerStatus::Offline;
             }
-            None => server_status.set("Offline".to_string()),
+            APPLICATION_STATE.write().sever_status.sync_now(status.data);
         }
     };
 

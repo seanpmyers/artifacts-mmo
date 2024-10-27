@@ -20,7 +20,7 @@ pub struct StatusResponse {
     pub data: Status,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Status {
     pub announcements: Option<Vec<Announcements>>,
     pub characters_online: i32,
@@ -30,7 +30,7 @@ pub struct Status {
     pub version: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Announcements {
     pub message: String,
     pub created_at: String,

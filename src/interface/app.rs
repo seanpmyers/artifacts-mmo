@@ -22,7 +22,11 @@ use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
 use super::style::theme::Theme;
 use crate::{
-    api::v1::{maps::Map, my_characters::MyCharacters, status::ServerStatus},
+    api::v1::{
+        maps::Map,
+        my_characters::MyCharacters,
+        status::{ServerStatus, Status},
+    },
     constants::{AUDIO_PATHS, BUTTON_CLICK_SOUND, HERO_SIMPLE_CELEBRATION_03_SOUND},
     interface::router::route::Route,
 };
@@ -32,6 +36,7 @@ pub struct ApplicationState {
     pub artifacts_server_status: ServerStatus,
     pub characters: Remote<Vec<MyCharacters>>,
     pub map_tiles: Remote<Vec<Map>>,
+    pub sever_status: Remote<Status>,
     pub current_theme: Theme,
     pub date_time: DateTime<chrono::Local>,
     pub full_day_month_date: String,
@@ -57,6 +62,7 @@ pub static APPLICATION_STATE: GlobalSignal<ApplicationState> =
         artifacts_server_status: ServerStatus::Unknown,
         characters: Remote::default(),
         map_tiles: Remote::default(),
+        sever_status: Remote::default(),
         sound_on: true,
     });
 

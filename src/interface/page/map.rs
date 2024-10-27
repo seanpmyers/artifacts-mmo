@@ -24,7 +24,7 @@ pub fn Map() -> Element {
     rsx! {
         div { class: css::CANVAS,
             h1 { class: css::ARTIFACTS_HEADER, "Map" }
-            div {
+            div { class: css::MAP,
                 for tile in APPLICATION_STATE().map_tiles.data.map_or(Vec::new(), |map_tiles| map_tiles) {
                     MapTile { tile }
                 }
@@ -36,7 +36,9 @@ pub fn Map() -> Element {
 #[component]
 pub fn MapTile(tile: Map) -> Element {
     rsx! {
-        img { src: get_image_url(tile.skin, ImageResourceType::Maps), class: css::MAP_TILE}
+       div {
+           img { src: get_image_url(tile.skin, ImageResourceType::Maps), class: css::MAP_TILE}
+       }
     }
 }
 
