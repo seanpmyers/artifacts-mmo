@@ -19,7 +19,6 @@ fn main() -> Result<()> {
     configure_logging()?;
     info!("RUN STARTED");
 
-    // start_playing(&mut http_client, api_token);
     dioxus_logger::init(Level::DEBUG).expect("failed to initialize logger");
     dioxus_sdk::storage::set_dir!();
     let launch_builder: LaunchBuilder<Config> = LaunchBuilder::desktop()
