@@ -10,7 +10,7 @@ use crate::api::v1::{
         },
         ActionCraftingRequest, ActionCraftingResponse, ActionGatheringRequest,
         ActionGatheringResponse, ActionGeSellItemRequest, ActionGeSellItemResponse,
-        ActionMoveRequest, ActionMoveResponse, MyCharacters,
+        ActionMoveRequest, ActionMoveResponse,
     },
     status::{handler::call_get_status, StatusResponse},
 };
@@ -27,14 +27,14 @@ pub fn start_playing(http_client: &mut ureq::Agent, api_token: String) {
         return;
     }
 
-    let my_characters: Option<Vec<MyCharacters>> = call_get_my_characters(http_client, &api_token);
+    let my_characters: Option<Vec<Character>> = call_get_my_characters(http_client, &api_token);
 
     if let Some(characters) = my_characters {
         let mut mining_threads: Vec<std::thread::JoinHandle<()>> = vec![];
         for character in characters.into_iter() {
             info!("Found character: {:?}", character);
             let mut mining_active: bool = true;
-            let character: Character = character.to_character();
+            let character: Character = character;
             let mut new_client: ureq::Agent = http_client.clone();
             let duplicate_token: String = api_token.clone();
             mining_threads.push(std::thread::spawn(move || {

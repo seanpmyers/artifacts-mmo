@@ -62,9 +62,10 @@ pub struct GetCharacterResponse {
     pub data: Character,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Character {
     pub name: String,
+    pub account: String,
     pub skin: Skin,
     pub level: i32,
     pub xp: i32,
@@ -92,7 +93,12 @@ pub struct Character {
     pub jewelrycrafting_level: i32,
     pub jewelrycrafting_xp: i32,
     pub jewelrycrafting_max_xp: i32,
+    pub alchemy_level: i32,
+    pub alchemy_xp: i32,
+    pub alchemy_max_xp: i32,
     pub hp: i32,
+    pub max_hp: i32,
+    pub haste: i32,
     pub critical_strike: i32,
     pub stamina: i32,
     pub attack_fire: i32,
@@ -123,10 +129,10 @@ pub struct Character {
     pub artifact1_slot: String,
     pub artifact2_slot: String,
     pub artifact3_slot: String,
-    pub consumable1_slot: String,
-    pub consumable1_slot_quantity: i32,
-    pub consumable2_slot: String,
-    pub consumable2_slot_quantity: i32,
+    pub utility1_slot: String,
+    pub utility1_slot_quantity: i32,
+    pub utility2_slot: String,
+    pub utility2_slot_quantity: i32,
     pub inventory: Vec<InventorySlot>,
     pub inventory_max_items: i32,
     pub task: String,

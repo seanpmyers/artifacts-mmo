@@ -3,6 +3,7 @@ use url::Url;
 
 use crate::{
     api::v1::{
+        characters::Character,
         my_characters::{ActionCraftingResponse, ActionGatheringResponse, GetMyCharactersResponse},
         QueryParameters,
     },
@@ -12,7 +13,7 @@ use crate::{
 
 use super::{
     ActionCraftingRequest, ActionGatheringRequest, ActionGeSellItemRequest,
-    ActionGeSellItemResponse, ActionMoveRequest, ActionMoveResponse, MyCharacters, ACTION_CRAFTING,
+    ActionGeSellItemResponse, ActionMoveRequest, ActionMoveResponse, ACTION_CRAFTING,
     ACTION_GE_SELL_ITEM, GET_MY_CHARACTERS,
 };
 
@@ -60,7 +61,7 @@ pub fn call_action_move(
 pub fn call_get_my_characters(
     http_client: &mut ureq::Agent,
     api_token: &String,
-) -> Option<Vec<MyCharacters>> {
+) -> Option<Vec<Character>> {
     let my_characters_url: String = format!(
         "{}{}{}",
         "https://", ARTIFACTS_MMO_HOST, GET_MY_CHARACTERS.path

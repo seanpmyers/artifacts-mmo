@@ -1,11 +1,12 @@
 use dioxus::prelude::*;
 use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
+use crate::api::v1::characters::Character;
 use crate::api::v1::my_characters::handler::call_get_my_characters;
-use crate::api::v1::my_characters::MyCharacters;
-use crate::constants::css::{ARTIFACTS_HEADER, CANVAS, MY_CHARACTERS};
+use crate::constants::css::{self, ARTIFACTS_HEADER, CANVAS, MY_CHARACTERS};
 use crate::interface::app::{ApplicationState, APPLICATION_STATE};
 use crate::interface::component::character::Character;
+use crate::interface::widget::audible_button::AudibleButton;
 
 #[component]
 pub fn Characters() -> Element {
@@ -14,8 +15,8 @@ pub fn Characters() -> Element {
 
     let mut search: Signal<String> = use_signal(String::new);
 
-    let visible_characters: Memo<Vec<MyCharacters>> = use_memo(move || {
-        let filtered_characters: Vec<MyCharacters> = APPLICATION_STATE
+    let visible_characters: Memo<Vec<Character>> = use_memo(move || {
+        let filtered_characters: Vec<Character> = APPLICATION_STATE
             .read()
             .characters
             .data
@@ -30,9 +31,7 @@ pub fn Characters() -> Element {
     });
 
     use_future(move || async move {
-        if APPLICATION_STATE().characters.is_out_of_sync() {
-            get_user_characters(&api_key(), &mut APPLICATION_STATE.signal()).await;
-        }
+        update_characters(&api_key()).await;
     });
 
     rsx! {
@@ -46,6 +45,16 @@ pub fn Characters() -> Element {
                     onchange: move |event| {
                         search.set(event.value());
                     }
+                }
+                AudibleButton { onclick: move |_|{
+                    use_future(move || async move {
+                       update_characters(&api_key()).await
+                    });
+                }, tooltip: "Refresh status".to_string(),
+                    img {
+                            class: css::IMAGE_ICON,
+                            src: "assets/images/refresh.png"
+                     }
                 }
             }
             div { class: MY_CHARACTERS,
@@ -61,5 +70,11 @@ pub async fn get_user_characters(api_key: &str, app_state: &mut Signal<Applicati
     let mut http_client: ureq::Agent = ureq::AgentBuilder::new().build();
     if let Some(my_characters) = call_get_my_characters(&mut http_client, &api_key.to_string()) {
         app_state.write().characters.sync_now(my_characters);
+    }
+}
+
+pub async fn update_characters(api_key: &str) {
+    if APPLICATION_STATE().characters.is_out_of_sync() {
+        get_user_characters(api_key, &mut APPLICATION_STATE.signal()).await;
     }
 }

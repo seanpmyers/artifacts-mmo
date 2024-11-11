@@ -23,8 +23,8 @@ use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 use super::style::theme::Theme;
 use crate::{
     api::v1::{
+        characters::Character,
         maps::Map,
-        my_characters::MyCharacters,
         status::{ServerStatus, Status},
     },
     constants::{AUDIO_PATHS, BUTTON_CLICK_SOUND, HERO_SIMPLE_CELEBRATION_03_SOUND},
@@ -34,7 +34,7 @@ use crate::{
 #[derive(Debug, Clone, PartialEq)]
 pub struct ApplicationState {
     pub artifacts_server_status: ServerStatus,
-    pub characters: Remote<Vec<MyCharacters>>,
+    pub characters: Remote<Vec<Character>>,
     pub map_tiles: Remote<Vec<Map>>,
     pub sever_status: Remote<Status>,
     pub current_theme: Theme,

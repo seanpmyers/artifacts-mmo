@@ -2,7 +2,7 @@ use dioxus::{desktop::use_window, prelude::*};
 
 use crate::{
     api::v1::{
-        my_characters::MyCharacters,
+        characters,
         resources::{get_image_url, ImageResourceType},
     },
     constants::css::{self},
@@ -10,7 +10,7 @@ use crate::{
 };
 
 #[component]
-pub fn Character(character: MyCharacters) -> Element {
+pub fn Character(character: characters::Character) -> Element {
     let character_json_string: String =
         serde_json::to_string_pretty(&character).unwrap_or("None".to_string());
     let character_clone = character.clone();
@@ -64,7 +64,7 @@ fn character_json_window(json: String) -> Element {
     }
 }
 
-fn character_window(character: MyCharacters) -> Element {
+fn character_window(character: characters::Character) -> Element {
     blur_window(&use_window().window);
     let item_img_url = |code: String| {
         if code.is_empty() {
