@@ -23,7 +23,12 @@ pub fn Characters() -> Element {
             .clone()
             .map_or(Vec::new(), |characters| characters)
             .iter()
-            .filter(|charater| charater.name.contains(&search()))
+            .filter(|charater| {
+                charater
+                    .name
+                    .to_lowercase()
+                    .contains(&search().to_lowercase())
+            })
             .cloned()
             .collect::<Vec<_>>();
 
@@ -50,7 +55,7 @@ pub fn Characters() -> Element {
                     use_future(move || async move {
                        update_characters(&api_key()).await
                     });
-                }, tooltip: "Refresh status".to_string(),
+                }, tooltip: "Refresh characters".to_string(),
                     img {
                             class: css::IMAGE_ICON,
                             src: "assets/images/refresh.png"

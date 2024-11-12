@@ -37,6 +37,10 @@ pub fn Map() -> Element {
 pub fn MapTile(tile: Map) -> Element {
     rsx! {
        div {
+           div {
+               div { "{tile.name}" }
+               div { "x: {tile.x} y: {tile.y}" }
+           }
            img { src: get_image_url(tile.skin, ImageResourceType::Maps), class: css::MAP_TILE}
        }
     }

@@ -6,7 +6,10 @@ use crate::{
         resources::{get_image_url, ImageResourceType},
     },
     constants::css::{self},
-    interface::{app::blur_window, configuration::desktop::configure_dioxus_desktop},
+    interface::{
+        app::blur_window, configuration::desktop::configure_dioxus_desktop,
+        widget::audible_button::AudibleButton,
+    },
 };
 
 #[component]
@@ -14,11 +17,12 @@ pub fn Character(character: characters::Character) -> Element {
     let character_json_string: String =
         serde_json::to_string_pretty(&character).unwrap_or("None".to_string());
     let character_clone = character.clone();
+
     rsx! {
         div { class: format!("{} {}", css::ON_CANVAS, css::CHARACTER),
             div {
                 h3 { "{character.name}" }
-                button {
+                AudibleButton {
                     onclick: move |_: MouseEvent| {
                         dioxus::desktop::window()
                             .new_window(
@@ -31,7 +35,7 @@ pub fn Character(character: characters::Character) -> Element {
                     },
                     "JSON"
                 }
-                button {
+                AudibleButton{
                     onclick: move |_: MouseEvent| {
                         dioxus::desktop::window()
                             .new_window(
@@ -45,6 +49,10 @@ pub fn Character(character: characters::Character) -> Element {
             img {
                 src: get_image_url(character.skin.to_string(), ImageResourceType::Characters),
                 class: css::CHARACTER_IMAGE
+            }
+            div {
+                div { "x: {character.x} y: {character.y}"}
+                div { "" }
             }
         }
     }

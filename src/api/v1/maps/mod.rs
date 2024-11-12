@@ -23,6 +23,11 @@ pub struct GetAllMapsResponse {
     pub data: Vec<Map>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GetMapResponse {
+    pub data: Map,
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Map {
     pub content: Option<MapContent>,
