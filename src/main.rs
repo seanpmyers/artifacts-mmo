@@ -5,7 +5,7 @@ use configuration::configure_logging;
 use interface::configuration::desktop::configure_dioxus_desktop;
 use log::info;
 
-use dioxus::{desktop::Config, prelude::*};
+use dioxus::prelude::*;
 use tracing::Level;
 
 pub mod api;
@@ -21,7 +21,7 @@ fn main() -> Result<()> {
 
     dioxus_logger::init(Level::DEBUG).expect("failed to initialize logger");
     dioxus_sdk::storage::set_dir!();
-    let launch_builder: LaunchBuilder<Config> = LaunchBuilder::desktop()
+    let launch_builder: LaunchBuilder = LaunchBuilder::desktop()
         .with_cfg(configure_dioxus_desktop().with_background_color((0, 0, 0, 0)));
     launch_builder.launch(interface::app::App);
 

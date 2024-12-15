@@ -5,7 +5,7 @@ use crate::api::v1::characters::Character;
 use crate::api::v1::my_characters::handler::call_get_my_characters;
 use crate::constants::css::{self, ARTIFACTS_HEADER, CANVAS, MY_CHARACTERS};
 use crate::interface::app::{ApplicationState, APPLICATION_STATE};
-use crate::interface::component::character::Character;
+use crate::interface::component::character::Character as CharacterComponent;
 use crate::interface::widget::audible_button::AudibleButton;
 
 #[component]
@@ -64,7 +64,7 @@ pub fn Characters() -> Element {
             }
             div { class: MY_CHARACTERS,
                 for character in visible_characters() {
-                    Character { character }
+                    CharacterComponent { character }
                 }
             }
         }

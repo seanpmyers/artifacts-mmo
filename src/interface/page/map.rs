@@ -3,7 +3,7 @@ use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
 use crate::{
     api::v1::{
-        maps::{handler::get_all_maps, Map},
+        maps::{handler::get_all_maps, Map as MapData},
         resources::{get_image_url, ImageResourceType},
     },
     constants::css,
@@ -34,7 +34,7 @@ pub fn Map() -> Element {
 }
 
 #[component]
-pub fn MapTile(tile: Map) -> Element {
+pub fn MapTile(tile: MapData) -> Element {
     rsx! {
        div {
            div {

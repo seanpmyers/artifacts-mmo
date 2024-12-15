@@ -12,9 +12,9 @@ env_logger = "0.11.5"
 futures-util = "0.3.30"
 # Logging
 log = { version = "0.4.22", features = ["serde"] }
-dioxus = { version = "0.5.6", features = ["desktop", "router"] }
-dioxus-logger = "0.5.0"
-dioxus-sdk = { version = "0.5.0", features = [
+dioxus = { version = "0.6.0", features = ["desktop", "router"] }
+dioxus-logger = "0.6.0"
+dioxus-sdk = { version = "0.6.0", features = [
 	"clipboard",
 	"storage",
 	"web-sys",
@@ -35,3 +35,15 @@ time = { version = "0.3.36", features = [
 ureq = { version = "2.10.0", features = ["json", "cookies", "charset"] }
 url = { version = "2.5.2" }
 window-vibrancy = "0.5.1"
+
+[profile]
+
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 1
+
+[profile.server-dev]
+inherits = "dev"
+
+[profile.android-dev]
+inherits = "dev"
