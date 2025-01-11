@@ -8,7 +8,7 @@ cargo run > "logs/$(date +'%Y-%m-%d_%H-%M-%S').txt"
 ```
 
 ```bash
-dx serve --hot-reload --platform desktop
+dx serve --hot-reload true --platform desktop
 ```
 
 Font: `Upheaval TT (BRK)`
