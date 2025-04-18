@@ -1,0 +1,35 @@
+[package]
+name = "artifacts-mmo"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+name = "artifacts_mmo"
+path = "src/lib.rs"
+
+[dependencies]
+
+anyhow ={workspace = true} 
+chrono = { workspace = true, features = ["serde"] }
+chrono-tz = { workspace = true, features = ["serde"] }
+iana-time-zone = {workspace = true}
+env_logger = {workspace = true}
+futures-util = {workspace = true}
+http = { workspace = true }
+# Logging
+log = { workspace = true, features = ["serde"] }
+image = { workspace = true, features = ["png"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tracing = {workspace = true}
+# Time
+time = { workspace = true, features = [
+	"serde",
+	"formatting",
+	"std",
+	"parsing",
+] }
+ureq = { workspace = true, features = ["json", "cookies", "charset"] }
+url = { workspace = true }
+window-vibrancy = {workspace = true}
