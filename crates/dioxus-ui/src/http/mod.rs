@@ -1,6 +1,4 @@
-use log::{error, warn};
 use std::fmt;
-use ureq::Body;
 
 use crate::constants::api::ARTIFACTS_MMO_HOST;
 

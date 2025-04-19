@@ -3,7 +3,7 @@ use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
 use crate::{
     constants::css::{CANVAS, IMAGE_ICON},
-    interface::widget::audible_button::AudibleButton,
+    interface::{app::APPLICATION_STATE, widget::audible_button::AudibleButton},
 };
 
 #[component]
@@ -47,7 +47,7 @@ pub fn Account() -> Element {
                 input {
                     r#type: "text",
                     value: "{api_key}",
-                    oninput: move |event| { api_key.set(event.value()) }
+                    oninput: move |event| { api_key.set(event.value()); APPLICATION_STATE.write().artifacts_client.update_api_token(event.value()); }
                 }
             } else {
                 if hidden() {

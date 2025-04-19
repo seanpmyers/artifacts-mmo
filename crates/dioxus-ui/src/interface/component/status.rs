@@ -1,3 +1,4 @@
+use artifacts_mmo::api::v4::{self, status::StatusRequest};
 use dioxus::prelude::*;
 
 use crate::{
@@ -24,8 +25,17 @@ pub fn Status() -> Element {
         }
     });
     let refresh_status = move |_| {
-        // let mut http_client: ureq::Agent = ureq::AgentBuilder::new().build();
-        // if let Some(status) = call_get_status(&mut http_client) {
+        let mut http_client: ureq::Agent = ureq::agent();
+        let request = v4::status::StatusRequest {};
+        let api_response = APPLICATION_STATE
+            .read()
+            .artifacts_client
+            .make_api_call::<v4::status::StatusRequest>(&mut http_client, vec![], request);
+        match api_response {
+            Ok(response) => todo!(),
+            Err(_) => todo!(),
+        }
+        // if let Some(status) =  {
         //     if status.data.status == "online" {
         //         APPLICATION_STATE.write().artifacts_server_status = ServerStatus::Online;
         //     } else {

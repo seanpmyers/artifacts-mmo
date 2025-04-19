@@ -4,10 +4,13 @@ use std::{
     io::{Cursor, Read},
 };
 
-use artifacts_mmo::api::v4::{
-    characters::Character,
-    maps::Map,
-    status::{GameStatus, ServerStatus},
+use artifacts_mmo::api::{
+    v4::{
+        characters::Character,
+        maps::Map,
+        status::{GameStatus, ServerStatus},
+    },
+    ArtifactsMMOClient,
 };
 use chrono::DateTime;
 use dioxus::{
@@ -33,6 +36,7 @@ use crate::{
 #[derive(Debug, Clone, PartialEq)]
 pub struct ApplicationState {
     pub artifacts_server_status: ServerStatus,
+    pub artifacts_client: ArtifactsMMOClient,
     pub characters: Remote<Vec<Character>>,
     pub map_tiles: Remote<Vec<Map>>,
     pub sever_status: Remote<GameStatus>,
@@ -52,17 +56,20 @@ pub struct Assets {
 
 pub static APPLICATION_STATE: GlobalSignal<ApplicationState> =
     Signal::global(|| ApplicationState {
-        current_theme: Theme::Dark,
-        date_time: chrono::Local::now(),
-        session_start: chrono::Local::now(),
-        timezone: iana_time_zone::get_timezone().unwrap_or("Unknown Timezone".to_string()),
-        full_day_month_date: "".to_string(),
-        full_timestamp_shorthand: "".to_string(),
         artifacts_server_status: ServerStatus::Unknown,
+        artifacts_client: ArtifactsMMOClient {
+            api_token: String::new(),
+        },
         characters: Remote::default(),
         map_tiles: Remote::default(),
         sever_status: Remote::default(),
+        current_theme: Theme::Dark,
+        date_time: chrono::Local::now(),
+        full_day_month_date: "".to_string(),
+        full_timestamp_shorthand: "".to_string(),
+        session_start: chrono::Local::now(),
         sound_on: true,
+        timezone: iana_time_zone::get_timezone().unwrap_or("Unknown Timezone".to_string()),
     });
 
 pub static ASSETS: GlobalSignal<Assets> = Signal::global(|| Assets {
