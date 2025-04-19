@@ -5,6 +5,7 @@ use std::{
 };
 
 use artifacts_mmo::api::v4::{
+    characters::Character,
     maps::Map,
     status::{GameStatus, ServerStatus},
 };
@@ -72,10 +73,10 @@ pub static ASSETS: GlobalSignal<Assets> = Signal::global(|| Assets {
 pub fn App() -> Element {
     blur_window(&use_window().window);
 
-    use_future(move || async move {
-        load_sounds();
-        play_hero_simple_celebration_03();
-    });
+    // use_future(move || async move {
+    //     load_sounds();
+    //     play_hero_simple_celebration_03();
+    // });
 
     rsx! {
         Router::<Route> {}

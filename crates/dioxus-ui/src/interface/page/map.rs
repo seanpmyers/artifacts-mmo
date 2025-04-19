@@ -1,18 +1,15 @@
+use artifacts_mmo::api::v4::maps::Map;
+use artifacts_mmo::api::v4::resources::ImageResourceType;
 use dioxus::prelude::*;
 use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
 use crate::{
-    api::v1::{
-        maps::Map as MapData,
-        resources::{get_image_url, ImageResourceType},
-    },
     constants::css,
     interface::app::{ApplicationState, APPLICATION_STATE},
 };
-// use crate::api::v1::maps::handler::get_all_maps;
 
 #[component]
-pub fn Map() -> Element {
+pub fn MapWidget() -> Element {
     let api_key: Signal<String> =
         use_synced_storage::<LocalStorage, String>("api_key".to_string(), String::new);
 
@@ -35,14 +32,14 @@ pub fn Map() -> Element {
 }
 
 #[component]
-pub fn MapTile(tile: MapData) -> Element {
+pub fn MapTile(tile: Map) -> Element {
     rsx! {
        div {
            div {
                div { "{tile.name}" }
                div { "x: {tile.x} y: {tile.y}" }
            }
-           img { src: get_image_url(tile.skin, ImageResourceType::Maps), class: css::MAP_TILE}
+           img { src:ImageResourceType::Maps.to_uri_string(&tile.skin), class: css::MAP_TILE}
        }
     }
 }

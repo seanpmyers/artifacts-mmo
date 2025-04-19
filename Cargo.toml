@@ -51,6 +51,18 @@ ureq = { version = "3.0.10", features = ["json", "cookies", "charset"] }
 url = { version = "2.5.4" }
 window-vibrancy = "0.6.0"
 
+[profile]
+
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 1
+
+[profile.server-dev]
+inherits = "dev"
+
+[profile.android-dev]
+inherits = "dev"
+
 
 
 

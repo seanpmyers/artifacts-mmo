@@ -36,7 +36,7 @@ pub fn SideNavigation() -> Element {
             title: "Monsters",
         },
         SideNavigationItem {
-            route: Route::Map {},
+            route: Route::MapWidget {},
             link_css: link_css.join(" "),
             image_src: "assets/images/ash_tree.png",
             title: "Map",

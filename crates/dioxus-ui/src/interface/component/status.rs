@@ -1,11 +1,9 @@
 use dioxus::prelude::*;
 
 use crate::{
-    api::v1::status::ServerStatus,
     constants::css::{self},
     interface::{app::APPLICATION_STATE, widget::audible_button::AudibleButton},
 };
-// use crate::api::v1::status::handler::call_get_status;
 
 #[component]
 pub fn Status() -> Element {

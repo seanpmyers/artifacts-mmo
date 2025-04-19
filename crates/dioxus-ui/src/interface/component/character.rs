@@ -1,3 +1,4 @@
+use artifacts_mmo::api::v4::resources::ImageResourceType;
 use dioxus::{desktop::use_window, prelude::*};
 
 use crate::{
@@ -9,7 +10,7 @@ use crate::{
 };
 
 #[component]
-pub fn Character(character: characters::Character) -> Element {
+pub fn Character(character: artifacts_mmo::api::v4::characters::Character) -> Element {
     let character_json_string: String =
         serde_json::to_string_pretty(&character).unwrap_or("None".to_string());
     let character_clone = character.clone();
@@ -17,7 +18,7 @@ pub fn Character(character: characters::Character) -> Element {
     rsx! {
         div { class: format!("{} {}", css::ON_CANVAS, css::CHARACTER),
             div {
-                h3 { "{character.name}" }
+                h3 { "{character.profile.name}" }
                 AudibleButton {
                     onclick: move |_: MouseEvent| {
                         dioxus::desktop::window()
@@ -43,11 +44,11 @@ pub fn Character(character: characters::Character) -> Element {
                 }
             }
             img {
-                src: get_image_url(character.skin.to_string(), ImageResourceType::Characters),
+                src: ImageResourceType::Characters.to_uri_string(&character.profile.skin.to_string()),
                 class: css::CHARACTER_IMAGE
             }
             div {
-                div { "x: {character.x} y: {character.y}"}
+                div { "x: {character.location.x} y: {character.location.y}"}
                 div { "" }
             }
         }
@@ -68,29 +69,23 @@ fn character_json_window(json: String) -> Element {
     }
 }
 
-fn character_window(character: characters::Character) -> Element {
+fn character_window(character: artifacts_mmo::api::v4::characters::Character) -> Element {
     blur_window(&use_window().window);
-    let item_img_url = |code: String| {
-        if code.is_empty() {
-            return None;
-        }
-        Some(get_image_url(code, ImageResourceType::Items))
-    };
     rsx! {
         div { class: css::CHARACTER_WINDOW,
-            h1 { class: css::ARTIFACTS_HEADER, "{character.name}" }
+            h1 { class: css::ARTIFACTS_HEADER, "{character.profile.name}" }
             div {
                 label { "Level" }
-                span { "{character.level}" }
+                span { "{character.level.level}" }
             }
             div { class: css::CHARACTER_VIEW,
                 CharacterViewBlock {
                     label: "Helmet",
                     css: format!("{} {}", css::EQUIP_LEFT, css::EQUIPMENT_BLOCK),
-                    url: item_img_url(character.helmet_slot)
+                    url: ImageResourceType::Items.to_uri_string(&character.equipment.helmet_slot.to_string()),
                 }
                 div { class: format!("{}", css::CHARACTER_VIEW_IMAGE),
-                    img { src: get_image_url(character.skin.to_string(), ImageResourceType::Characters) }
+                    img { src: ImageResourceType::Characters.to_uri_string(&character.profile.skin.to_string()) }
                 }
                 CharacterViewBlock {
                     label: "Shield",

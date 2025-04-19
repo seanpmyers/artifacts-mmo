@@ -1,8 +1,7 @@
+use artifacts_mmo::api::v4::characters::Character;
 use dioxus::prelude::*;
 use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
-use crate::api::v1::characters::Character;
-// use crate::api::v1::my_characters::handler::call_get_my_characters;
 use crate::constants::css::{self, ARTIFACTS_HEADER, CANVAS, MY_CHARACTERS};
 use crate::interface::app::{ApplicationState, APPLICATION_STATE};
 use crate::interface::component::character::Character as CharacterComponent;
@@ -25,6 +24,7 @@ pub fn Characters() -> Element {
             .iter()
             .filter(|charater| {
                 charater
+                    .profile
                     .name
                     .to_lowercase()
                     .contains(&search().to_lowercase())

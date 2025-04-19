@@ -14,9 +14,9 @@ pub fn ServerStatus() -> Element {
                 class: format!(
                     "online-status {}",
                     match APPLICATION_STATE().artifacts_server_status {
-                        ServerStatusState::Online => "green",
-                        ServerStatusState::Offline => "red",
-                        ServerStatusState::Unknown => "gray",
+                        artifacts_mmo::api::v4::status::ServerStatus::Online => "green",
+                        artifacts_mmo::api::v4::status::ServerStatus::Offline => "red",
+                        artifacts_mmo::api::v4::status::ServerStatus::Unknown => "gray",
                     },
                 )
             }
