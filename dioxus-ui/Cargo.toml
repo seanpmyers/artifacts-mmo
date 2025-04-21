@@ -14,7 +14,7 @@ env_logger = {workspace = true}
 futures-util = {workspace = true}
 # Logging
 log = { workspace = true, features = ["serde"] }
-dioxus = { workspace = true, features = ["desktop", "router"] }
+dioxus = { workspace = true, features = ["router"] }
 dioxus-logger = {workspace = true}
 dioxus-sdk = { workspace = true, features = [
 	"clipboard",
@@ -38,14 +38,7 @@ ureq = { workspace = true, features = ["json", "cookies", "charset"] }
 url = { workspace = true }
 window-vibrancy = {workspace = true}
 
-[profile]
 
-[profile.wasm-dev]
-inherits = "dev"
-opt-level = 1
-
-[profile.server-dev]
-inherits = "dev"
-
-[profile.android-dev]
-inherits = "dev"
+[features]
+default = ["desktop"]
+desktop = ["dioxus/desktop"]

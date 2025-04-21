@@ -58,7 +58,7 @@ pub fn Characters() -> Element {
                 }, tooltip: "Refresh characters".to_string(),
                     img {
                             class: css::IMAGE_ICON,
-                            src: "assets/images/refresh.png"
+                            src: asset!("assets/images/refresh.png")
                      }
                 }
             }

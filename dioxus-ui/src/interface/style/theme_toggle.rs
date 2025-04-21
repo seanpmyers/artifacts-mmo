@@ -27,7 +27,7 @@ pub fn ThemeToggle() -> Element {
                 Theme::Dark => "Enable light mode".to_string(),
                 Theme::Light => "Enable dark mode".to_string(),
             },
-            img { class: IMAGE_ICON, src: "assets/images/theme_toggle.png" }
+            img { class: IMAGE_ICON, src: asset!("/assets/images/theme_toggle.png") }
         }
     }
 }

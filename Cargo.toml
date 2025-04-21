@@ -1,12 +1,6 @@
 [workspace]
-members = [
-  "crates/artifacts-mmo",
-  "crates/dioxus-ui"
-]
-default-members = [
-  "crates/artifacts-mmo",
-  "crates/dioxus-ui"
-]
+members = ["artifacts-mmo", "dioxus-ui"]
+default-members = ["artifacts-mmo", "dioxus-ui"]
 resolver = "3"
 
 [workspace.package]
@@ -16,7 +10,7 @@ edition = "2021"
 rust-version = "1.84.0"
 
 [workspace.dependencies]
-artifacts-mmo = { path = "crates/artifacts-mmo", version = "0.1.0" }
+artifacts-mmo = { path = "artifacts-mmo", version = "0.1.0" }
 
 anyhow = "1.0.97"
 chrono = { version = "0.4.40", features = ["serde"] }
@@ -24,7 +18,7 @@ chrono-tz = { version = "0.10.3", features = ["serde"] }
 iana-time-zone = "0.1.63"
 env_logger = "0.11.5"
 futures-util = "0.3.31"
-http = {version = "1.3.1" }
+http = { version = "1.3.1" }
 # Logging
 log = { version = "0.4.27", features = ["serde"] }
 dioxus = { version = "0.6.3", features = ["desktop", "router"] }
@@ -62,8 +56,3 @@ inherits = "dev"
 
 [profile.android-dev]
 inherits = "dev"
-
-
-
-
-

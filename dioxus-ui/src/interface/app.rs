@@ -4,13 +4,10 @@ use std::{
     io::{Cursor, Read},
 };
 
-use artifacts_mmo::api::{
-    v4::{
-        characters::Character,
-        maps::Map,
-        status::{GameStatus, ServerStatus},
-    },
-    ArtifactsMMOClient,
+use artifacts_mmo::api::v4::{
+    characters::Character,
+    maps::Map,
+    status::{GameStatus, ServerStatus},
 };
 use chrono::DateTime;
 use dioxus::{
@@ -36,7 +33,7 @@ use crate::{
 #[derive(Debug, Clone, PartialEq)]
 pub struct ApplicationState {
     pub artifacts_server_status: ServerStatus,
-    pub artifacts_client: ArtifactsMMOClient,
+    pub api_token: String,
     pub characters: Remote<Vec<Character>>,
     pub map_tiles: Remote<Vec<Map>>,
     pub sever_status: Remote<GameStatus>,
@@ -57,9 +54,7 @@ pub struct Assets {
 pub static APPLICATION_STATE: GlobalSignal<ApplicationState> =
     Signal::global(|| ApplicationState {
         artifacts_server_status: ServerStatus::Unknown,
-        artifacts_client: ArtifactsMMOClient {
-            api_token: String::new(),
-        },
+        api_token: String::new(),
         characters: Remote::default(),
         map_tiles: Remote::default(),
         sever_status: Remote::default(),
@@ -80,10 +75,10 @@ pub static ASSETS: GlobalSignal<Assets> = Signal::global(|| Assets {
 pub fn App() -> Element {
     blur_window(&use_window().window);
 
-    // use_future(move || async move {
-    //     load_sounds();
-    //     play_hero_simple_celebration_03();
-    // });
+    use_future(move || async move {
+        load_sounds();
+        play_hero_simple_celebration_03();
+    });
 
     rsx! {
         Router::<Route> {}

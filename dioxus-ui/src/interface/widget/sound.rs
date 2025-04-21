@@ -18,9 +18,9 @@ pub fn Sound() -> Element {
                 false => "Unmute audio".to_string(),
             },
             if APPLICATION_STATE().sound_on {
-                img { class: IMAGE_ICON, src: "assets/images/sound_on.png" }
+                img { class: IMAGE_ICON, src: asset!("/assets/images/sound_on.png") }
             } else {
-                img { class: IMAGE_ICON, src: "assets/images/muted.png" }
+                img { class: IMAGE_ICON, src: asset!("/assets/images/muted.png") }
             }
         }
     }

@@ -1,5 +1,5 @@
 pub mod accounts {
-    use crate::api::Endpoint;
+    use crate::api::{Endpoint, EndpointResponse};
 
     #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
     pub struct CreateAccountRequest {
@@ -12,6 +12,14 @@ pub mod accounts {
     pub struct CreateAccountResponse {}
 
     impl Endpoint for CreateAccountRequest {
+        fn call(
+            &mut self,
+            bearer_token: String,
+            http_client: &mut ureq::Agent,
+        ) -> EndpointResponse<CreateAccountResponse> {
+            todo!()
+        }
+
         fn http_request_method() -> http::Method {
             http::Method::POST
         }
@@ -24,11 +32,11 @@ pub mod accounts {
             "/accounts/create".to_string()
         }
 
+        type Response = CreateAccountResponse;
+
         fn query(&self) -> Option<String> {
             None
         }
-
-        type Response = CreateAccountResponse;
 
         fn request_body(&self) -> Option<CreateAccountRequest> {
             Some(self.clone())
@@ -39,14 +47,15 @@ pub mod accounts {
 pub mod my_account {}
 pub mod my_characters {}
 pub mod status {
-    use crate::api::Endpoint;
+    use crate::api::{Endpoint, EndpointData, EndpointResponse};
+    use log::error;
 
     #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
     pub struct StatusRequest {}
 
     #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
     pub struct StatusResponse {
-        data: GameStatus,
+        pub data: GameStatus,
     }
 
     #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
@@ -56,16 +65,16 @@ pub mod status {
         pub last_wipe: String,
         pub max_level: i32,
         pub next_wipe: String,
-        #[serde(with = "chrono::serde::ts_seconds_option")]
         pub server_time: Option<chrono::DateTime<chrono::Utc>>,
         pub status: String,
         pub version: String,
     }
 
+    impl EndpointData for GameStatus {}
+
     #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
     pub struct Announcements {
         pub message: String,
-        #[serde(with = "chrono::serde::ts_seconds_option")]
         pub created_at: Option<chrono::DateTime<chrono::Utc>>,
     }
 
@@ -89,6 +98,26 @@ pub mod status {
 
     impl Endpoint for StatusRequest {
         type Response = StatusResponse;
+
+        fn call(
+            &mut self,
+            bearer_token: String,
+            http_client: &mut ureq::Agent,
+        ) -> EndpointResponse<StatusResponse> {
+            let response: Result<http::Response<ureq::Body>, ureq::Error> =
+                Self::make_api_call::<StatusRequest>(self, http_client, vec![], bearer_token);
+            match response {
+                Ok(mut response) => {
+                    let body = response.body_mut().read_json::<StatusResponse>();
+                    match body {
+                        Ok(status) => return EndpointResponse::Success(status),
+                        Err(error) => error!("{}", error),
+                    }
+                }
+                Err(error) => error!("{}", error),
+            }
+            EndpointResponse::Error
+        }
 
         fn http_request_method() -> http::Method {
             http::Method::GET
@@ -117,7 +146,7 @@ pub mod status {
 pub mod achievements {}
 pub mod badges {}
 pub mod characters {
-    use crate::api::Endpoint;
+    use crate::api::{Endpoint, EndpointResponse};
 
     #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
     pub struct GetCharacterRequest {
@@ -126,6 +155,14 @@ pub mod characters {
 
     impl Endpoint for GetCharacterRequest {
         type Response = GetCharacterResponse;
+
+        fn call(
+            &mut self,
+            bearer_token: String,
+            http_client: &mut ureq::Agent,
+        ) -> EndpointResponse<GetCharacterResponse> {
+            todo!()
+        }
 
         fn http_request_method() -> http::Method {
             http::Method::GET
@@ -403,7 +440,7 @@ pub mod grand_exchange {}
 pub mod items {}
 pub mod leaderboard {}
 pub mod maps {
-    use crate::api::Endpoint;
+    use crate::api::{Endpoint, EndpointResponse};
 
     #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
     pub struct GetMapRequest {
@@ -478,6 +515,14 @@ pub mod maps {
     impl Endpoint for GetMapRequest {
         type Response = GetMapResponse;
 
+        fn call(
+            &mut self,
+            bearer_token: String,
+            http_client: &mut ureq::Agent,
+        ) -> EndpointResponse<GetMapResponse> {
+            todo!()
+        }
+
         fn http_request_method() -> http::Method {
             http::Method::GET
         }
@@ -504,6 +549,14 @@ pub mod maps {
 
     impl Endpoint for GetAllMapsRequest {
         type Response = GetAllMapsResponse;
+
+        fn call(
+            &mut self,
+            bearer_token: String,
+            http_client: &mut ureq::Agent,
+        ) -> EndpointResponse<GetAllMapsResponse> {
+            todo!()
+        }
 
         fn http_request_method() -> http::Method {
             http::Method::GET

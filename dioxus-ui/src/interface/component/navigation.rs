@@ -5,11 +5,16 @@ use crate::{
     interface::{app::play_button_click_sound, router::route::Route},
 };
 
+const CHICKEN_IMAGE: Asset = asset!("/assets/images/chicken.png");
+const ASH_TREE_IMAGE: Asset = asset!("/assets/images/ash_tree.png");
+const CULTIST_EMPORER_IMAGE: Asset = asset!("/assets/images/cultist_emperor.png");
+const MEN_1_IMAGE: Asset = asset!("/assets/images/men1.png");
+
 #[derive(Clone, PartialEq)]
 pub struct SideNavigationItem {
     pub route: Route,
     pub link_css: String,
-    pub image_src: &'static str,
+    pub image_src: Asset,
     pub title: &'static str,
 }
 
@@ -20,25 +25,25 @@ pub fn SideNavigation() -> Element {
         SideNavigationItem {
             route: Route::Home {},
             link_css: link_css.join(" "),
-            image_src: "assets/images/chicken.png",
+            image_src: CHICKEN_IMAGE,
             title: "Home",
         },
         SideNavigationItem {
             route: Route::Characters {},
             link_css: link_css.join(" "),
-            image_src: "assets/images/men1.png",
+            image_src: MEN_1_IMAGE,
             title: "Characters",
         },
         SideNavigationItem {
             route: Route::Monsters {},
             link_css: link_css.join(" "),
-            image_src: "assets/images/cultist_emperor.png",
+            image_src: CULTIST_EMPORER_IMAGE,
             title: "Monsters",
         },
         SideNavigationItem {
             route: Route::MapWidget {},
             link_css: link_css.join(" "),
-            image_src: "assets/images/ash_tree.png",
+            image_src: ASH_TREE_IMAGE,
             title: "Map",
         },
     ];

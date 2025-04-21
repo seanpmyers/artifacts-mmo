@@ -19,7 +19,7 @@ fn main() -> Result<()> {
     info!("RUN STARTED");
 
     dioxus_logger::init(Level::DEBUG).expect("failed to initialize logger");
-    dioxus_sdk::storage::set_dir!();
+    dioxus_sdk::storage::set_dir!("../../");
     let launch_builder: LaunchBuilder = LaunchBuilder::desktop()
         .with_cfg(configure_dioxus_desktop().with_background_color((0, 0, 0, 0)));
     launch_builder.launch(interface::app::App);
