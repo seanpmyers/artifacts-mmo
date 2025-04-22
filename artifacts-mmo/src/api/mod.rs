@@ -100,11 +100,3 @@ pub trait Endpoint: serde::Serialize + for<'de> serde::Deserialize<'de> {
     where
         Self: Sized;
 }
-
-pub trait EndpointData {}
-
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
-pub enum Action {
-    CheckServerStatus(v4::status::StatusRequest),
-}
-
