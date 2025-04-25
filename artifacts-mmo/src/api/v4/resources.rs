@@ -31,7 +31,7 @@ impl std::fmt::Display for ImageResourceType {
 
 impl ImageResourceType {
     pub fn to_uri_string(&self, code: &str) -> String {
-        format!("{}{}.png", ARTIFACTS_MMO_HOST, Self::path(&self, code))
+        format!("https://{}{}", ARTIFACTS_MMO_HOST, Self::path(&self, code))
     }
 
     pub fn path(&self, code: &str) -> String {

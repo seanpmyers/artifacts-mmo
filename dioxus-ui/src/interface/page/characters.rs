@@ -72,7 +72,7 @@ pub fn Characters() -> Element {
 }
 
 pub async fn get_user_characters(api_key: &str, app_state: &mut Signal<ApplicationState>) {
-    // let mut http_client: ureq::Agent = ureq::AgentBuilder::new().build();
+    // let request = artifacts_mmo::api::v4::my_characters::;
     // if let Some(my_characters) = call_get_my_characters(&mut http_client, &api_key.to_string()) {
     //     app_state.write().characters.sync_now(my_characters);
     // }

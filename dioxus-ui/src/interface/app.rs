@@ -71,6 +71,8 @@ pub static ASSETS: GlobalSignal<Assets> = Signal::global(|| Assets {
     sounds: HashMap::new(),
 });
 
+pub static HTTP_CLIENT: GlobalSignal<ureq::Agent> = Global::new(|| ureq::agent());
+
 #[component]
 pub fn App() -> Element {
     blur_window(&use_window().window);

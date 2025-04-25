@@ -6,7 +6,10 @@ use dioxus::prelude::*;
 
 use crate::{
     constants::css::{self},
-    interface::{app::APPLICATION_STATE, widget::audible_button::AudibleButton},
+    interface::{
+        app::{APPLICATION_STATE, HTTP_CLIENT},
+        widget::audible_button::AudibleButton,
+    },
 };
 
 #[component]
@@ -50,11 +53,10 @@ pub fn Status() -> Element {
 }
 
 pub fn refresh_status() {
-    let mut http_client: ureq::Agent = ureq::agent();
     let mut request = v4::status::StatusRequest {};
     let response: EndpointResponse<v4::status::StatusResponse> = v4::status::StatusRequest::call(
         &mut request,
-        &mut http_client,
+        &mut HTTP_CLIENT.write(),
         APPLICATION_STATE.read().api_token.clone(),
     );
     match response {

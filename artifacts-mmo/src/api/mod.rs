@@ -8,6 +8,9 @@ pub const ARTIFACTS_MMO_HOST: &str = "artifactsmmo.com";
 pub const HTTP_ACCEPT_HEADER: &str = "accept";
 pub const HTTP_AUTHORIZATION_HEADER: &str = "authorization";
 pub const HTTP_APPLICATION_JSON: &str = "application/json";
+pub const PAGE_SIZE_MAX: u32 = 100u32;
+pub const PAGE_SIZE_MIN: u32 = 1u32;
+pub const PAGE_SIZE_DEFAULT: u32 = 50u32;
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub enum EndpointResponse<T> {
@@ -93,6 +96,8 @@ pub trait Endpoint: serde::Serialize + for<'de> serde::Deserialize<'de> {
             request_builder = request_builder.header(&key, &value);
         }
 
+        log::info!("Making HTTP requet: {:?}", request_builder);
+
         match Self::request_body(self) {
             Some(body) => Ok(http_client
                 .run(request_builder.body(ureq::SendBody::from_json(&body)?)?)?
@@ -106,7 +111,7 @@ pub trait Endpoint: serde::Serialize + for<'de> serde::Deserialize<'de> {
     }
 
     fn page_size() -> u32 {
-        50u32
+        PAGE_SIZE_DEFAULT
     }
 
     fn pageable() -> bool {

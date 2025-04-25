@@ -10,6 +10,11 @@ use crate::interface::{
 
 #[component]
 pub fn Layout() -> Element {
+    let version = use_memo(move || match APPLICATION_STATE().sever_status.data {
+        Some(data) => data.version,
+        None => "".to_string(),
+    });
+
     rsx! {
         div {
             class: format!(
@@ -18,6 +23,9 @@ pub fn Layout() -> Element {
             ),
             div { class: "top-nav",
                 h3 { class: "top-nav-heading", "Artifacts-MMO" }
+                if !version().is_empty() {
+                    div { "v{version}" }
+                }
                 ServerStatus {}
                 Sound {}
                 ThemeToggle {}

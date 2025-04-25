@@ -1,4 +1,4 @@
-use crate::api::Endpoint;
+use crate::api::{Endpoint, PAGE_SIZE_DEFAULT};
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct GetMapRequest {
@@ -15,12 +15,17 @@ pub struct GetMapResponse {
 pub struct GetAllMapsRequest {
     pub content_code: Option<String>,
     pub content_type: Option<MapContentType>,
+    pub page: Option<u32>,
     pub page_size: Option<u32>,
 }
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct GetAllMapsResponse {
     pub data: Vec<Map>,
+    pub total: u32,
+    pub page: u32,
+    pub size: u32,
+    pub pages: u32,
 }
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
@@ -99,14 +104,15 @@ impl Endpoint for GetAllMapsRequest {
 
     fn query(&self) -> Option<String> {
         let page_query: String = format!(
-            "&size={}",
+            "&size={}&page={}",
             match self.page_size {
                 Some(size) => size,
                 None => Self::page_size(),
-            }
+            },
+            self.page.unwrap_or(PAGE_SIZE_DEFAULT),
         );
         match (&self.content_code, &self.content_type) {
-            (None, None) => None,
+            (None, None) => Some(page_query),
             (None, Some(content_type)) => Some(format!(
                 "content_type={}{}",
                 content_type.to_string(),
