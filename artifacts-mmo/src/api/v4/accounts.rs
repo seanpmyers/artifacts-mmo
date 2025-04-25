@@ -1,12 +1,19 @@
-use crate::api::{Endpoint, EndpointResponse};
+use crate::api::Endpoint;
 
-use super::achievements::{AchievementRewards, AchivementType};
+use super::{
+    achievements::{AchievementRewards, AchievementType},
+    characters::Character,
+};
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
-pub struct GetAccountRequest {}
+pub struct GetAccountRequest {
+    pub account: String,
+}
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
-pub struct GetAccountResponse {}
+pub struct GetAccountResponse {
+    pub data: AccountDetails,
+}
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct AccountDetails {
@@ -42,43 +49,11 @@ pub struct CreateAccountRequest {
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct CreateAccountResponse {}
 
-impl Endpoint for CreateAccountRequest {
-    fn call(
-        &mut self,
-        bearer_token: String,
-        http_client: &mut ureq::Agent,
-    ) -> EndpointResponse<CreateAccountResponse> {
-        todo!()
-    }
-
-    fn http_request_method() -> http::Method {
-        http::Method::POST
-    }
-
-    fn pageable() -> bool {
-        false
-    }
-
-    fn path(&self) -> String {
-        "/accounts/create".to_string()
-    }
-
-    type Response = CreateAccountResponse;
-
-    fn query(&self) -> Option<String> {
-        None
-    }
-
-    fn request_body(&self) -> Option<CreateAccountRequest> {
-        Some(self.clone())
-    }
-}
-
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct GetAccountAchievementsRequest {
     pub account: String,
     #[serde(rename = "type")]
-    pub achivement_type: Option<AchivementType>,
+    pub achievement_type: Option<AchievementType>,
     pub completed: Option<bool>,
     pub page: Option<u32>,
     pub size: Option<u32>,
@@ -96,7 +71,7 @@ pub struct GetAccountAchievementsResponse {
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct AccountAchievement {
     #[serde(rename = "type")]
-    pub achivement_type: AchivementType,
+    pub achivement_type: AchievementType,
     pub code: String,
     pub completed_at: chrono::DateTime<chrono::Utc>,
     pub description: String,
@@ -105,4 +80,73 @@ pub struct AccountAchievement {
     pub rewards: AchievementRewards,
     pub target: String,
     pub total: i32,
+}
+
+#[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+pub struct GetAccountCharactersRequest {
+    pub account: String,
+}
+
+#[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
+pub struct GetAccountCharactersResponse {
+    pub data: Vec<Character>,
+}
+
+impl Endpoint for CreateAccountRequest {
+    type Response = CreateAccountResponse;
+
+    fn http_request_method() -> http::Method {
+        http::Method::POST
+    }
+
+    fn path(&self) -> String {
+        "/accounts/create".to_string()
+    }
+}
+
+impl Endpoint for GetAccountAchievementsRequest {
+    type Response = GetAccountAchievementsResponse;
+
+    fn http_request_method() -> http::Method {
+        http::Method::GET
+    }
+
+    fn path(&self) -> String {
+        format!("accounts/{}/achievements", self.account)
+    }
+
+    fn query(&self) -> Option<String> {
+        let mut query: String = format!("?size={}", self.size.unwrap_or(Self::page_size()));
+        if let Some(achievement_type) = &self.achievement_type {
+            query.push_str(&format!("&type={}", achievement_type));
+        }
+        if let Some(completed) = self.completed {
+            query.push_str(&format!("&completed={}", completed));
+        }
+        Some(query)
+    }
+}
+
+impl Endpoint for GetAccountRequest {
+    type Response = GetAccountResponse;
+
+    fn http_request_method() -> http::Method {
+        http::Method::GET
+    }
+
+    fn path(&self) -> String {
+        format!("/accounts/{}", self.account)
+    }
+}
+
+impl Endpoint for GetAccountCharactersRequest {
+    type Response = GetAccountCharactersResponse;
+
+    fn http_request_method() -> http::Method {
+        http::Method::GET
+    }
+
+    fn path(&self) -> String {
+        format!("accounts/{}/characters", self.account)
+    }
 }

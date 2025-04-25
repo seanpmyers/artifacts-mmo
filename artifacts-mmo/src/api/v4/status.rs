@@ -1,5 +1,4 @@
-use crate::api::{Endpoint, EndpointResponse};
-use log::error;
+use crate::api::Endpoint;
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct StatusRequest {}
@@ -49,46 +48,11 @@ impl std::fmt::Display for ServerStatus {
 impl Endpoint for StatusRequest {
     type Response = StatusResponse;
 
-    fn call(
-        &mut self,
-        bearer_token: String,
-        http_client: &mut ureq::Agent,
-    ) -> EndpointResponse<StatusResponse> {
-        let response: Result<http::Response<ureq::Body>, ureq::Error> =
-            Self::make_api_call::<StatusRequest>(self, http_client, vec![], bearer_token);
-        match response {
-            Ok(mut response) => {
-                let body = response.body_mut().read_json::<StatusResponse>();
-                match body {
-                    Ok(status) => return EndpointResponse::Success(status),
-                    Err(error) => error!("{}", error),
-                }
-            }
-            Err(error) => error!("{}", error),
-        }
-        EndpointResponse::Error
-    }
-
     fn http_request_method() -> http::Method {
         http::Method::GET
     }
 
-    fn pageable() -> bool {
-        false
-    }
-
     fn path(&self) -> String {
         "/".to_string()
-    }
-
-    fn query(&self) -> Option<String> {
-        None
-    }
-
-    fn request_body(&self) -> Option<Self>
-    where
-        Self: Sized,
-    {
-        None
     }
 }

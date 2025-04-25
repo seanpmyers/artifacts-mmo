@@ -5,7 +5,7 @@ pub mod status;
 pub mod achievements {
     #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
     #[serde(rename_all = "snake_case")]
-    pub enum AchivementType {
+    pub enum AchievementType {
         CombatDrop,
         CombatKill,
         CombatLevel,
@@ -13,7 +13,7 @@ pub mod achievements {
         Gathering,
         #[default]
         Other,
-        Recyling,
+        Recycling,
         Task,
         Use,
     }
@@ -21,6 +21,26 @@ pub mod achievements {
     #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
     pub struct AchievementRewards {
         pub gold: i32,
+    }
+
+    impl std::fmt::Display for AchievementType {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(
+                f,
+                "{}",
+                match self {
+                    AchievementType::CombatDrop => "combat_drop",
+                    AchievementType::CombatKill => "combat_kill",
+                    AchievementType::CombatLevel => "combat_level",
+                    AchievementType::Crafting => "crafting",
+                    AchievementType::Gathering => "gathering",
+                    AchievementType::Other => "other",
+                    AchievementType::Recycling => "recycling",
+                    AchievementType::Task => "task",
+                    AchievementType::Use => "use",
+                }
+            )
+        }
     }
 }
 pub mod badges {}

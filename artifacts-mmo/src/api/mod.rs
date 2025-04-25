@@ -38,19 +38,26 @@ pub trait Endpoint: serde::Serialize + for<'de> serde::Deserialize<'de> {
     }
 
     fn call(
-        &mut self,
-        bearer_token: String,
+        &self,
         http_client: &mut ureq::Agent,
-    ) -> EndpointResponse<Self::Response>;
-
-    fn default_page_size() -> i32 {
-        50i32
+        bearer_token: String,
+    ) -> EndpointResponse<Self::Response>
+    where
+        <Self as Endpoint>::Response: serde::Serialize,
+    {
+        match self.make_api_call::<Self::Response>(http_client, bearer_token) {
+            Ok(bytes) => match Self::to_data(bytes) {
+                Ok(data) => {
+                    return EndpointResponse::Success(data);
+                }
+                Err(error) => log::error!("{}", error),
+            },
+            Err(error) => log::error!("{}", error),
+        };
+        EndpointResponse::Error
     }
 
-    fn get_default_host() -> &'static str {
-        ARTIFACTS_MMO_API_HOST
-    }
-    fn get_headers(&self, bearer_token: String) -> Vec<(String, String)> {
+    fn default_headers(&self, bearer_token: String) -> Vec<(String, String)> {
         vec![
             (
                 HTTP_ACCEPT_HEADER.to_string(),
@@ -62,14 +69,22 @@ pub trait Endpoint: serde::Serialize + for<'de> serde::Deserialize<'de> {
             ),
         ]
     }
+
+    fn get_default_host() -> &'static str {
+        ARTIFACTS_MMO_API_HOST
+    }
+
+    fn get_headers(&self, bearer_token: String) -> Vec<(String, String)> {
+        Self::default_headers(&self, bearer_token)
+    }
+
     fn http_request_method() -> http::Method;
 
-    fn make_api_call<T: serde::Serialize + for<'de> serde::Deserialize<'de> + Endpoint>(
+    fn make_api_call<T: serde::Serialize + for<'de> serde::Deserialize<'de>>(
         &self,
         http_client: &mut ureq::Agent,
-        headers: Vec<(String, String)>,
         bearer_token: String,
-    ) -> Result<ureq::http::Response<ureq::Body>, ureq::Error> {
+    ) -> Result<Vec<u8>, ureq::Error> {
         let mut request_builder: ureq::http::request::Builder = ureq::http::Request::builder()
             .uri(Self::build_uri(self, None)?)
             .method(Self::http_request_method());
@@ -78,25 +93,40 @@ pub trait Endpoint: serde::Serialize + for<'de> serde::Deserialize<'de> {
             request_builder = request_builder.header(&key, &value);
         }
 
-        for (key, value) in headers {
-            request_builder = request_builder.header(&key, &value);
-        }
-
         match Self::request_body(self) {
-            Some(body) => {
-                Ok(http_client.run(request_builder.body(ureq::SendBody::from_json(&body)?)?)?)
-            }
-            None => Ok(http_client.run(request_builder.body(())?)?),
+            Some(body) => Ok(http_client
+                .run(request_builder.body(ureq::SendBody::from_json(&body)?)?)?
+                .body_mut()
+                .read_to_vec()?),
+            None => Ok(http_client
+                .run(request_builder.body(())?)?
+                .body_mut()
+                .read_to_vec()?),
         }
     }
 
-    fn pageable() -> bool;
+    fn page_size() -> u32 {
+        50u32
+    }
+
+    fn pageable() -> bool {
+        false
+    }
 
     fn path(&self) -> String;
 
-    fn query(&self) -> Option<String>;
+    fn query(&self) -> Option<String> {
+        None
+    }
 
     fn request_body(&self) -> Option<Self>
     where
-        Self: Sized;
+        Self: Sized,
+    {
+        None
+    }
+
+    fn to_data(bytes: Vec<u8>) -> Result<Self::Response, serde_json::Error> {
+        Ok(serde_json::de::from_slice::<Self::Response>(&bytes)?)
+    }
 }

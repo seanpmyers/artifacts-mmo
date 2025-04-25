@@ -1,4 +1,4 @@
-use crate::api::{Endpoint, EndpointResponse};
+use crate::api::Endpoint;
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct GetCharacterRequest {
@@ -8,35 +8,16 @@ pub struct GetCharacterRequest {
 impl Endpoint for GetCharacterRequest {
     type Response = GetCharacterResponse;
 
-    fn call(
-        &mut self,
-        bearer_token: String,
-        http_client: &mut ureq::Agent,
-    ) -> EndpointResponse<GetCharacterResponse> {
-        todo!()
-    }
-
     fn http_request_method() -> http::Method {
         http::Method::GET
-    }
-
-    fn pageable() -> bool {
-        false
     }
 
     fn path(&self) -> String {
         format!("/characters/{}", self.name)
     }
 
-    fn query(&self) -> Option<String> {
-        None
-    }
-
-    fn request_body(&self) -> Option<Self>
-    where
-        Self: Sized,
-    {
-        None
+    fn get_default_host() -> &'static str {
+        crate::api::ARTIFACTS_MMO_API_HOST
     }
 }
 

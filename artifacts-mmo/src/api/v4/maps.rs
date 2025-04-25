@@ -1,4 +1,4 @@
-use crate::api::{Endpoint, EndpointResponse};
+use crate::api::Endpoint;
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct GetMapRequest {
@@ -15,7 +15,7 @@ pub struct GetMapResponse {
 pub struct GetAllMapsRequest {
     pub content_code: Option<String>,
     pub content_type: Option<MapContentType>,
-    pub page_size: Option<i32>,
+    pub page_size: Option<u32>,
 }
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
@@ -73,48 +73,17 @@ impl std::fmt::Display for MapContentType {
 impl Endpoint for GetMapRequest {
     type Response = GetMapResponse;
 
-    fn call(
-        &mut self,
-        bearer_token: String,
-        http_client: &mut ureq::Agent,
-    ) -> EndpointResponse<GetMapResponse> {
-        todo!()
-    }
-
     fn http_request_method() -> http::Method {
         http::Method::GET
-    }
-
-    fn pageable() -> bool {
-        false
     }
 
     fn path(&self) -> String {
         format!("/maps/{}/{}", self.x, self.y)
     }
-
-    fn query(&self) -> Option<String> {
-        None
-    }
-
-    fn request_body(&self) -> Option<Self>
-    where
-        Self: Sized,
-    {
-        None
-    }
 }
 
 impl Endpoint for GetAllMapsRequest {
     type Response = GetAllMapsResponse;
-
-    fn call(
-        &mut self,
-        bearer_token: String,
-        http_client: &mut ureq::Agent,
-    ) -> EndpointResponse<GetAllMapsResponse> {
-        todo!()
-    }
 
     fn http_request_method() -> http::Method {
         http::Method::GET
@@ -133,7 +102,7 @@ impl Endpoint for GetAllMapsRequest {
             "&size={}",
             match self.page_size {
                 Some(size) => size,
-                None => Self::default_page_size(),
+                None => Self::page_size(),
             }
         );
         match (&self.content_code, &self.content_type) {
@@ -151,12 +120,5 @@ impl Endpoint for GetAllMapsRequest {
                 content_code, content_type, page_query
             )),
         }
-    }
-
-    fn request_body(&self) -> Option<Self>
-    where
-        Self: Sized,
-    {
-        None
     }
 }

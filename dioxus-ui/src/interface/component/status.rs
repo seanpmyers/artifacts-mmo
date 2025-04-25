@@ -54,8 +54,8 @@ pub fn refresh_status() {
     let mut request = v4::status::StatusRequest {};
     let response: EndpointResponse<v4::status::StatusResponse> = v4::status::StatusRequest::call(
         &mut request,
-        APPLICATION_STATE.read().api_token.clone(),
         &mut http_client,
+        APPLICATION_STATE.read().api_token.clone(),
     );
     match response {
         EndpointResponse::Error => log::error!("Status request failed."),
