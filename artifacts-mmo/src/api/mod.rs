@@ -11,12 +11,42 @@ pub const HTTP_APPLICATION_JSON: &str = "application/json";
 pub const PAGE_SIZE_MAX: u32 = 100u32;
 pub const PAGE_SIZE_MIN: u32 = 1u32;
 pub const PAGE_SIZE_DEFAULT: u32 = 50u32;
+pub const DEFAULT_START_PAGE: u32 = 1u32;
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub enum EndpointResponse<T> {
     #[default]
     Error,
     Success(T),
+}
+
+#[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+pub struct PageInput {
+    pub page: Option<u32>,
+    pub size: Option<u32>,
+}
+
+impl PageInput {
+    pub fn to_tuples(&self) -> Vec<(String, String)> {
+        vec![
+            (
+                String::from("page"),
+                self.page.unwrap_or(DEFAULT_START_PAGE).to_string(),
+            ),
+            (
+                String::from("size"),
+                self.size.unwrap_or(PAGE_SIZE_DEFAULT).to_string(),
+            ),
+        ]
+    }
+}
+
+#[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+pub struct PageOutput {
+    pub page: u32,
+    pub size: u32,
+    pub total: u32,
+    pub pages: u32,
 }
 
 pub trait Endpoint: serde::Serialize + for<'de> serde::Deserialize<'de> {
@@ -121,7 +151,23 @@ pub trait Endpoint: serde::Serialize + for<'de> serde::Deserialize<'de> {
     fn path(&self) -> String;
 
     fn query(&self) -> Option<String> {
-        None
+        let parmeters = Self::query_parameters(self);
+        if parmeters.is_empty() {
+            return None;
+        }
+        let mut query: String = String::from("?");
+        for (i, (key, value)) in parmeters.iter().enumerate() {
+            if i != 0 {
+                query.push('&');
+            }
+            query.push_str(&format!("{}={}", key, value));
+        }
+
+        Some(query)
+    }
+
+    fn query_parameters(&self) -> Vec<(String, String)> {
+        vec![]
     }
 
     fn request_body(&self) -> Option<Self>

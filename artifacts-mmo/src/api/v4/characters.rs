@@ -1,10 +1,16 @@
-use crate::api::Endpoint;
+use crate::api::{Endpoint, PageOutput};
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct GetCharacterRequest {
     pub name: String,
 }
 
+#[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
+pub struct GetCharactersResponse {
+    pub data: Vec<Character>,
+    #[serde(flatten)]
+    pub page_ouptut: PageOutput,
+}
 impl Endpoint for GetCharacterRequest {
     type Response = GetCharacterResponse;
 
@@ -19,15 +25,6 @@ impl Endpoint for GetCharacterRequest {
     fn get_default_host() -> &'static str {
         crate::api::ARTIFACTS_MMO_API_HOST
     }
-}
-
-#[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
-pub struct GetCharactersResponse {
-    pub data: Vec<Character>,
-    pub total: i32,
-    pub page: i32,
-    pub size: i32,
-    pub pages: i32,
 }
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]

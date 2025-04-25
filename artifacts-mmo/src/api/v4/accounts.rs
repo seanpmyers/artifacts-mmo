@@ -1,4 +1,4 @@
-use crate::api::Endpoint;
+use crate::api::{Endpoint, PageInput, PageOutput};
 
 use super::{
     achievements::{AchievementRewards, AchievementType},
@@ -55,17 +55,15 @@ pub struct GetAccountAchievementsRequest {
     #[serde(rename = "type")]
     pub achievement_type: Option<AchievementType>,
     pub completed: Option<bool>,
-    pub page: Option<u32>,
-    pub size: Option<u32>,
+    #[serde(flatten)]
+    pub page_input: PageInput,
 }
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct GetAccountAchievementsResponse {
     pub data: Vec<AccountAchievement>,
-    pub page: i32,
-    pub pages: i32,
-    pub size: i32,
-    pub total: i32,
+    #[serde(flatten)]
+    pub page_output: PageOutput,
 }
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
@@ -115,15 +113,17 @@ impl Endpoint for GetAccountAchievementsRequest {
         format!("accounts/{}/achievements", self.account)
     }
 
-    fn query(&self) -> Option<String> {
-        let mut query: String = format!("?size={}", self.size.unwrap_or(Self::page_size()));
-        if let Some(achievement_type) = &self.achievement_type {
-            query.push_str(&format!("&type={}", achievement_type));
+    fn query_parameters(&self) -> Vec<(String, String)> {
+        let mut result = self.page_input.to_tuples();
+
+        if let Some(x) = &self.achievement_type {
+            result.push((String::from("type"), x.to_string()));
         }
-        if let Some(completed) = self.completed {
-            query.push_str(&format!("&completed={}", completed));
+        if let Some(completed) = &self.completed {
+            result.push((String::from("completed"), completed.to_string()));
         }
-        Some(query)
+
+        result
     }
 }
 

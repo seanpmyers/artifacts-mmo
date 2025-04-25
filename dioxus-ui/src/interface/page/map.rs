@@ -1,6 +1,6 @@
 use artifacts_mmo::api::v4::maps::Map;
 use artifacts_mmo::api::v4::resources::ImageResourceType;
-use artifacts_mmo::api::{v4, Endpoint};
+use artifacts_mmo::api::{v4, Endpoint, PageInput};
 use dioxus::prelude::*;
 use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
@@ -52,21 +52,23 @@ pub async fn get_map_tiles(api_key: &str, app_state: &mut Signal<ApplicationStat
     let mut request = v4::maps::GetAllMapsRequest {
         content_code: None,
         content_type: None,
-        page_size: Some(artifacts_mmo::api::PAGE_SIZE_MAX),
-        page: Some(first_page),
+        page_input: PageInput {
+            size: Some(artifacts_mmo::api::PAGE_SIZE_MAX),
+            page: Some(first_page),
+        },
     };
     let client = &mut HTTP_CLIENT.write();
     match request.call(client, api_key.to_string()) {
         artifacts_mmo::api::EndpointResponse::Error => log::error!("Failed to get map tiles."),
         artifacts_mmo::api::EndpointResponse::Success(mut response) => {
             map_tiles.append(&mut response.data);
-            if response.pages.eq(&first_page) {
+            if response.page_output.pages.eq(&first_page) {
                 app_state.write().map_tiles.sync_now(map_tiles);
                 return;
             }
 
-            for page in (first_page + 1)..response.pages.saturating_add(1) {
-                request.page = Some(page);
+            for page in (first_page + 1)..response.page_output.pages.saturating_add(1) {
+                request.page_input.page = Some(page);
                 match request.call(client, api_key.to_string()) {
                     artifacts_mmo::api::EndpointResponse::Error => {
                         log::error!("Failed to get map tiles.Page: {}", page)

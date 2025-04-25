@@ -1,4 +1,4 @@
-use crate::api::{Endpoint, PAGE_SIZE_DEFAULT};
+use crate::api::{Endpoint, PageInput, PageOutput};
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct GetMapRequest {
@@ -15,17 +15,15 @@ pub struct GetMapResponse {
 pub struct GetAllMapsRequest {
     pub content_code: Option<String>,
     pub content_type: Option<MapContentType>,
-    pub page: Option<u32>,
-    pub page_size: Option<u32>,
+    #[serde(flatten)]
+    pub page_input: PageInput,
 }
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct GetAllMapsResponse {
     pub data: Vec<Map>,
-    pub total: u32,
-    pub page: u32,
-    pub size: u32,
-    pub pages: u32,
+    #[serde(flatten)]
+    pub page_output: PageOutput,
 }
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
@@ -102,29 +100,16 @@ impl Endpoint for GetAllMapsRequest {
         "/maps".to_string()
     }
 
-    fn query(&self) -> Option<String> {
-        let page_query: String = format!(
-            "&size={}&page={}",
-            match self.page_size {
-                Some(size) => size,
-                None => Self::page_size(),
-            },
-            self.page.unwrap_or(PAGE_SIZE_DEFAULT),
-        );
-        match (&self.content_code, &self.content_type) {
-            (None, None) => Some(page_query),
-            (None, Some(content_type)) => Some(format!(
-                "content_type={}{}",
-                content_type.to_string(),
-                page_query
-            )),
-            (Some(content_code), None) => {
-                Some(format!("content_code={}{}", content_code, page_query))
-            }
-            (Some(content_code), Some(content_type)) => Some(format!(
-                "content_code={}&content_type={}{}",
-                content_code, content_type, page_query
-            )),
+    fn query_parameters(&self) -> Vec<(String, String)> {
+        let mut parameters = self.page_input.to_tuples();
+
+        if let Some(content_code) = &self.content_code {
+            parameters.push((String::from("content_code"), content_code.clone()));
         }
+        if let Some(content_type) = &self.content_type {
+            parameters.push((String::from("content_type"), content_type.to_string()));
+        }
+
+        parameters
     }
 }
