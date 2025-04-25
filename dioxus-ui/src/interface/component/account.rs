@@ -3,13 +3,13 @@ use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
 use crate::{
     constants::css::{CANVAS, IMAGE_ICON},
-    interface::{app::APPLICATION_STATE, widget::audible_button::AudibleButton},
+    interface::widget::audible_button::AudibleButton,
 };
 
 #[component]
 pub fn Account() -> Element {
-    // let mut api_key: Signal<String> =
-    //     use_synced_storage::<LocalStorage, String>("api_key".to_string(), String::new);
+    let mut api_key: Signal<String> =
+        use_synced_storage::<LocalStorage, String>("api_key".to_string(), String::new);
 
     let mut hidden: Signal<bool> = use_signal(|| true);
     let mut editing: Signal<bool> = use_signal(|| false);
@@ -46,18 +46,18 @@ pub fn Account() -> Element {
             if editing() {
                 input {
                     r#type: "text",
-                    value: "{APPLICATION_STATE.write().api_token}",
-                    oninput: move |event| { APPLICATION_STATE.write().api_token = event.value(); }
+                    value: "{api_key}",
+                    oninput: move |event| { *api_key.write() = event.value(); }
                 }
             } else {
                 if hidden() {
                     input {
                         r#type: "password",
-                        value: "{APPLICATION_STATE.read().api_token}",
+                        value: "{api_key}",
                         disabled: hidden
                     }
                 } else {
-                    p { "{APPLICATION_STATE.read().api_token}" }
+                    p { "{api_key}" }
                 }
             }
         }

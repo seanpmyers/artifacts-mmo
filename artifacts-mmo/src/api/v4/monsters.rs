@@ -1,4 +1,4 @@
-use crate::api::{Endpoint, PageInput, PageOutput, DEFAULT_START_PAGE};
+use crate::api::{Endpoint, PageInput, PageOutput};
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct Monster {

@@ -157,7 +157,7 @@ pub struct Stats {
     pub haste: i32,
     pub prospecting: i32,
     pub speed: i32,
-    pub stamina: i32,
+    pub stamina: Option<i32>,
 }
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]

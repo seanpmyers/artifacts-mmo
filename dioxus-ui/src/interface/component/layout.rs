@@ -1,11 +1,14 @@
 use dioxus::prelude::*;
 
-use crate::interface::{
-    app::APPLICATION_STATE,
-    component::navigation::SideNavigation,
-    router::route::Route,
-    style::theme_toggle::ThemeToggle,
-    widget::{server_status::ServerStatus, sound::Sound},
+use crate::{
+    constants::css::CANVAS,
+    interface::{
+        app::APPLICATION_STATE,
+        component::navigation::SideNavigation,
+        router::route::Route,
+        style::theme_toggle::ThemeToggle,
+        widget::{server_status::ServerStatus, sound::Sound},
+    },
 };
 
 #[component]
@@ -24,7 +27,10 @@ pub fn Layout() -> Element {
             div { class: "top-nav",
                 h3 { class: "top-nav-heading", "Artifacts-MMO" }
                 if !version().is_empty() {
-                    div { "v{version}" }
+                    div {
+                        class: format!("{}", CANVAS),
+                        "v{version}"
+                    }
                 }
                 ServerStatus {}
                 Sound {}

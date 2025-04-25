@@ -77,7 +77,7 @@ pub static HTTP_CLIENT: GlobalSignal<ureq::Agent> = Global::new(|| ureq::agent()
 pub fn App() -> Element {
     blur_window(&use_window().window);
 
-    use_future(move || async move {
+    spawn(async move {
         load_sounds();
         play_hero_simple_celebration_03();
     });

@@ -1,6 +1,30 @@
 pub mod accounts;
 pub mod my_account {}
-pub mod my_characters {}
+pub mod my_characters {
+    use crate::api::Endpoint;
+
+    use super::characters::Character;
+
+    #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
+    pub struct GetMyCharactersRequest {}
+
+    #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
+    pub struct GetMyCharactersResponse {
+        pub data: Vec<Character>,
+    }
+
+    impl Endpoint for GetMyCharactersRequest {
+        type Response = GetMyCharactersResponse;
+
+        fn http_request_method() -> http::Method {
+            http::Method::GET
+        }
+
+        fn path(&self) -> String {
+            format!("/my/characters")
+        }
+    }
+}
 pub mod status;
 pub mod achievements {
     #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
@@ -50,7 +74,7 @@ pub mod events {}
 pub mod grand_exchange {}
 pub mod items {}
 pub mod leaderboard {
-    use crate::api::{Endpoint, PageInput, PageOutput, DEFAULT_START_PAGE};
+    use crate::api::{Endpoint, PageInput, PageOutput};
 
     use super::{accounts::MemberStatus, characters::Profile};
 

@@ -31,12 +31,20 @@ pub fn Status() -> Element {
         }
     });
 
+    spawn(async move {
+        refresh_status().await;
+    });
+
     rsx! {
         div { class: css::CANVAS,
             div { class: css::CANVAS,
                 div {
                     label { "Server Status" }
-                    AudibleButton { onclick: |_| refresh_status(), tooltip: "Refresh status".to_string(),
+                    AudibleButton { onclick: move |_| {
+                        spawn(async move {
+                           refresh_status().await;
+                        });
+                    }, tooltip: "Refresh status".to_string(),
                         img {
                             class: css::IMAGE_ICON,
                             src: asset!("assets/images/refresh.png")
@@ -52,7 +60,7 @@ pub fn Status() -> Element {
     }
 }
 
-pub fn refresh_status() {
+pub async fn refresh_status() {
     let mut request = v4::status::StatusRequest {};
     let response: EndpointResponse<v4::status::StatusResponse> = v4::status::StatusRequest::call(
         &mut request,
@@ -80,7 +88,7 @@ pub async fn check_server_status(mut next_server_status_refresh: Signal<String>)
     loop {
         match time_to_update {
             true => {
-                refresh_status();
+                refresh_status().await;
                 last_updated = tokio::time::Instant::now();
                 time_to_update = false;
                 tokio::time::sleep(std::time::Duration::from_secs(1)).await;

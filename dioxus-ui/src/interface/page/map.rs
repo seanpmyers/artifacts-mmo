@@ -15,7 +15,7 @@ pub fn MapWidget() -> Element {
     let api_key: Signal<String> =
         use_synced_storage::<LocalStorage, String>("api_key".to_string(), String::new);
 
-    use_future(move || async move {
+    spawn(async move {
         if APPLICATION_STATE().map_tiles.is_out_of_sync() {
             get_map_tiles(&api_key(), &mut APPLICATION_STATE.signal()).await;
         }
@@ -24,9 +24,12 @@ pub fn MapWidget() -> Element {
     rsx! {
         div { class: css::CANVAS,
             h1 { class: css::ARTIFACTS_HEADER, "Map" }
-            div { class: css::MAP,
-                for tile in APPLICATION_STATE().map_tiles.data.map_or(Vec::new(), |map_tiles| map_tiles) {
-                    MapTile { tile }
+            div {
+                class: css::MAP,
+                if APPLICATION_STATE().map_tiles.data.is_some_and(|x| !x.is_empty()) {
+                    for tile in APPLICATION_STATE().map_tiles.data.map_or(Vec::new(), |map_tiles| map_tiles) {
+                        MapTile { tile }
+                    }
                 }
             }
         }

@@ -1,9 +1,10 @@
 use artifacts_mmo::api::v4::characters::Character;
+use artifacts_mmo::api::Endpoint;
 use dioxus::prelude::*;
 use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
 use crate::constants::css::{self, ARTIFACTS_HEADER, CANVAS, MY_CHARACTERS};
-use crate::interface::app::{ApplicationState, APPLICATION_STATE};
+use crate::interface::app::{ApplicationState, APPLICATION_STATE, HTTP_CLIENT};
 use crate::interface::component::character::Character as CharacterComponent;
 use crate::interface::widget::audible_button::AudibleButton;
 
@@ -35,7 +36,7 @@ pub fn Characters() -> Element {
         filtered_characters
     });
 
-    use_future(move || async move {
+    spawn(async move {
         update_characters(&api_key()).await;
     });
 
@@ -52,7 +53,7 @@ pub fn Characters() -> Element {
                     }
                 }
                 AudibleButton { onclick: move |_|{
-                    use_future(move || async move {
+                    spawn(async move {
                        update_characters(&api_key()).await
                     });
                 }, tooltip: "Refresh characters".to_string(),
@@ -72,10 +73,14 @@ pub fn Characters() -> Element {
 }
 
 pub async fn get_user_characters(api_key: &str, app_state: &mut Signal<ApplicationState>) {
-    // let request = artifacts_mmo::api::v4::my_characters::;
-    // if let Some(my_characters) = call_get_my_characters(&mut http_client, &api_key.to_string()) {
-    //     app_state.write().characters.sync_now(my_characters);
-    // }
+    let request = artifacts_mmo::api::v4::my_characters::GetMyCharactersRequest {};
+    let response = request.call(&mut HTTP_CLIENT.write(), api_key.to_string());
+    match response {
+        artifacts_mmo::api::EndpointResponse::Error => log::error!("Failed to get my characters"),
+        artifacts_mmo::api::EndpointResponse::Success(response) => {
+            app_state.write().characters.sync_now(response.data);
+        }
+    }
 }
 
 pub async fn update_characters(api_key: &str) {
