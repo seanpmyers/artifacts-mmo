@@ -1,11 +1,16 @@
 use dioxus::prelude::*;
 
-use crate::interface::component::{account::Account, status::Status};
+use crate::constants::css;
 
 #[component]
-pub fn Home() -> Element {
+pub fn HomeComponent() -> Element {
+    // let mut api_key: Signal<String> =
+    //     use_synced_storage::<LocalStorage, String>("action_queue".to_string(), String::new);
+
     rsx! {
-        Account {}
-        Status {}
+        div {
+            class: css::CANVAS,
+            "Show each character and then allow for an action queue to be edited"
+        }
     }
 }

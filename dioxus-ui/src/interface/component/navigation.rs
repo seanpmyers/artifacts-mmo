@@ -9,6 +9,7 @@ const CHICKEN_IMAGE: Asset = asset!("/assets/images/chicken.png");
 const ASH_TREE_IMAGE: Asset = asset!("/assets/images/ash_tree.png");
 const CULTIST_EMPORER_IMAGE: Asset = asset!("/assets/images/cultist_emperor.png");
 const MEN_1_IMAGE: Asset = asset!("/assets/images/men1.png");
+const SWORD_IMAGE: Asset = asset!("/assets/logo.png");
 
 #[derive(Clone, PartialEq)]
 pub struct SideNavigationItem {
@@ -21,12 +22,12 @@ pub struct SideNavigationItem {
 #[component]
 pub fn SideNavigation() -> Element {
     let link_css: [&str; 2] = [BUTTON, SIDE_NAV_ITEM];
-    let navigation_items: [SideNavigationItem; 4] = [
+    let navigation_items: [SideNavigationItem; 5] = [
         SideNavigationItem {
-            route: Route::Home {},
+            route: Route::HomeComponent {},
             link_css: link_css.join(" "),
-            image_src: CHICKEN_IMAGE,
-            title: "Home",
+            image_src: SWORD_IMAGE,
+            title: "Play",
         },
         SideNavigationItem {
             route: Route::Characters {},
@@ -35,16 +36,22 @@ pub fn SideNavigation() -> Element {
             title: "Characters",
         },
         SideNavigationItem {
-            route: Route::Monsters {},
+            route: Route::MonstersComponent {},
             link_css: link_css.join(" "),
             image_src: CULTIST_EMPORER_IMAGE,
             title: "Monsters",
         },
         SideNavigationItem {
-            route: Route::MapWidget {},
+            route: Route::MapComponent {},
             link_css: link_css.join(" "),
             image_src: ASH_TREE_IMAGE,
             title: "Map",
+        },
+        SideNavigationItem {
+            route: Route::SettingsComponent {},
+            link_css: link_css.join(" "),
+            image_src: CHICKEN_IMAGE,
+            title: "Settings",
         },
     ];
     rsx! {

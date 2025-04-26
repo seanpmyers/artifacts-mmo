@@ -11,14 +11,16 @@ use crate::{
 };
 
 #[component]
-pub fn MapWidget() -> Element {
+pub fn MapComponent() -> Element {
     let api_key: Signal<String> =
         use_synced_storage::<LocalStorage, String>("api_key".to_string(), String::new);
 
-    spawn(async move {
-        if APPLICATION_STATE().map_tiles.is_out_of_sync() {
-            get_map_tiles(&api_key(), &mut APPLICATION_STATE.signal()).await;
-        }
+    use_effect(move || {
+        spawn(async move {
+            if APPLICATION_STATE().map_tiles.is_out_of_sync() {
+                get_map_tiles(&api_key(), &mut APPLICATION_STATE.signal()).await;
+            }
+        });
     });
 
     rsx! {
@@ -31,6 +33,9 @@ pub fn MapWidget() -> Element {
                         MapTile { tile }
                     }
                 }
+                else {
+                    div { "Loading..." }
+                }
             }
         }
     }
@@ -38,14 +43,32 @@ pub fn MapWidget() -> Element {
 
 #[component]
 pub fn MapTile(tile: Map) -> Element {
+    let mut hovering: Signal<bool> = use_signal(|| false);
+    let content: String = match tile.content {
+        Some(x) => x.content_type.to_string(),
+        None => String::new(),
+    };
     rsx! {
-       div {
-           div {
-               div { "{tile.name}" }
-               div { "x: {tile.x} y: {tile.y}" }
-           }
-           img { src:ImageResourceType::Maps.to_uri_string(&tile.skin), class: css::MAP_TILE}
-       }
+        div {
+            class: css::MAP_TILE_GRID,
+            onmouseover: move |_| {
+                hovering.set(true);
+            },
+            onmouseleave: move |_| {
+                hovering.set(false);
+            },
+            img {
+                src:ImageResourceType::Maps.to_uri_string(&tile.skin), class: css::MAP_TILE
+            }
+            if hovering() {
+                div {
+                    class: css::HOVERING_MAP_TILE,
+                    div { "{tile.name}" }
+                    div { "(x: {tile.x}, y: {tile.y})" }
+                    div { "{content}" }
+                }
+            }
+        }
     }
 }
 

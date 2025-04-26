@@ -24,3 +24,5 @@ pub const EQUIP_LEFT: CSS = "equip-left";
 pub const EQUIP_RIGHT: CSS = "equip-right";
 pub const CHARACTER_VIEW_IMAGE: CSS = "character-view-image";
 pub const SUBTLE_TEXT: CSS = "subtle-text";
+pub const MAP_TILE_GRID: CSS = "map-tile-grid";
+pub const HOVERING_MAP_TILE: CSS = "hovering-map-tile";

@@ -1,4 +1,4 @@
-use crate::api::Endpoint;
+use crate::api::{Endpoint, NoBody};
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct StatusRequest {}
@@ -47,6 +47,7 @@ impl std::fmt::Display for ServerStatus {
 
 impl Endpoint for StatusRequest {
     type Response = StatusResponse;
+    type RequestBody = NoBody;
 
     fn http_request_method() -> http::Method {
         http::Method::GET

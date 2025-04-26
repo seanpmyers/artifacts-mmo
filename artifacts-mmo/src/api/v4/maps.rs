@@ -1,4 +1,4 @@
-use crate::api::{Endpoint, PageInput, PageOutput};
+use crate::api::{Endpoint, NoBody, PageInput, PageOutput};
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct GetMapRequest {
@@ -75,6 +75,7 @@ impl std::fmt::Display for MapContentType {
 
 impl Endpoint for GetMapRequest {
     type Response = GetMapResponse;
+    type RequestBody = NoBody;
 
     fn http_request_method() -> http::Method {
         http::Method::GET
@@ -87,6 +88,7 @@ impl Endpoint for GetMapRequest {
 
 impl Endpoint for GetAllMapsRequest {
     type Response = GetAllMapsResponse;
+    type RequestBody = NoBody;
 
     fn http_request_method() -> http::Method {
         http::Method::GET

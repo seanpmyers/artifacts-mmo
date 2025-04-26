@@ -31,8 +31,12 @@ pub fn Status() -> Element {
         }
     });
 
-    spawn(async move {
-        refresh_status().await;
+    use_effect(move || {
+        if APPLICATION_STATE().sever_status.is_out_of_sync() {
+            spawn(async move {
+                refresh_status().await;
+            });
+        }
     });
 
     rsx! {

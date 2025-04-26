@@ -1,7 +1,8 @@
+pub mod v4;
+
 use std::str::FromStr;
 
-pub mod v1;
-pub mod v4;
+use v4::my_characters::ActionMoveRequest;
 
 pub const ARTIFACTS_MMO_API_HOST: &str = "api.artifactsmmo.com";
 pub const ARTIFACTS_MMO_HOST: &str = "artifactsmmo.com";
@@ -49,8 +50,12 @@ pub struct PageOutput {
     pub pages: u32,
 }
 
+#[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
+pub struct NoBody {}
+
 pub trait Endpoint: serde::Serialize + for<'de> serde::Deserialize<'de> {
     type Response: serde::de::DeserializeOwned;
+    type RequestBody: serde::Serialize;
 
     fn build_uri(&self, host: Option<&'static str>) -> Result<http::Uri, http::Error> {
         let authority: http::uri::Authority = match host {
@@ -155,7 +160,7 @@ pub trait Endpoint: serde::Serialize + for<'de> serde::Deserialize<'de> {
         if parmeters.is_empty() {
             return None;
         }
-        let mut query: String = String::from("?");
+        let mut query: String = String::new();
         for (i, (key, value)) in parmeters.iter().enumerate() {
             if i != 0 {
                 query.push('&');
@@ -170,14 +175,23 @@ pub trait Endpoint: serde::Serialize + for<'de> serde::Deserialize<'de> {
         vec![]
     }
 
-    fn request_body(&self) -> Option<Self>
-    where
-        Self: Sized,
-    {
+    fn request_body(&self) -> Option<Self::RequestBody> {
         None
     }
 
     fn to_data(bytes: Vec<u8>) -> Result<Self::Response, serde_json::Error> {
         Ok(serde_json::de::from_slice::<Self::Response>(&bytes)?)
     }
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum PlayerAction {
+    Move(ActionMoveRequest),
+}
+
+#[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
+pub struct CharacterActionQueue {
+    pub paused: bool,
+    pub queue: Vec<PlayerAction>,
 }

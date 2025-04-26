@@ -1,4 +1,4 @@
-use crate::api::{Endpoint, PageInput, PageOutput};
+use crate::api::{Endpoint, NoBody, PageInput, PageOutput};
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct Monster {
@@ -62,6 +62,7 @@ pub struct GetMonsterResponse {
 
 impl Endpoint for GetAllMonstersRequest {
     type Response = GetAllMonstersResponse;
+    type RequestBody = NoBody;
 
     fn http_request_method() -> http::Method {
         http::Method::GET
@@ -90,6 +91,7 @@ impl Endpoint for GetAllMonstersRequest {
 
 impl Endpoint for GetMonsterRequest {
     type Response = GetMonsterResponse;
+    type RequestBody = NoBody;
 
     fn http_request_method() -> http::Method {
         http::Method::GET

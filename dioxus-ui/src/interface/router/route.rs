@@ -1,6 +1,6 @@
 use crate::interface::{
-    component::layout::Layout, page::characters::Characters, page::home::Home,
-    page::map::MapWidget, page::monsters::Monsters,
+    component::layout::Layout, page::characters::Characters, page::home::HomeComponent,
+    page::map::MapComponent, page::monsters::MonstersComponent, page::settings::SettingsComponent,
 };
 use dioxus::prelude::*;
 
@@ -8,13 +8,15 @@ use dioxus::prelude::*;
 pub enum Route {
     #[layout(Layout)]
     #[route("/")]
-    Home {},
+    HomeComponent {},
     #[route("/characters")]
     Characters {},
     #[route("/monsters")]
-    Monsters {},
+    MonstersComponent {},
     #[route("/map")]
-    MapWidget {},
+    MapComponent {},
+    #[route("/settings")]
+    SettingsComponent {},
     #[end_layout]
     #[route("/:..route")]
     PageNotFound { route: Vec<String> },

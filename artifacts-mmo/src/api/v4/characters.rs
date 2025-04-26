@@ -1,4 +1,4 @@
-use crate::api::{Endpoint, PageOutput};
+use crate::api::{Endpoint, NoBody, PageOutput};
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct GetCharacterRequest {
@@ -13,6 +13,7 @@ pub struct GetCharactersResponse {
 }
 impl Endpoint for GetCharacterRequest {
     type Response = GetCharacterResponse;
+    type RequestBody = NoBody;
 
     fn http_request_method() -> http::Method {
         http::Method::GET
@@ -70,7 +71,7 @@ pub struct Character {
     #[serde(flatten)]
     pub cooking: Cooking,
     #[serde(flatten)]
-    pub cooldown: Cooldown,
+    pub cooldown: CharacterCooldown,
     #[serde(flatten)]
     pub equipment: Equipment,
     #[serde(flatten)]
@@ -147,7 +148,7 @@ pub struct Equipment {
 }
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
-pub struct Cooldown {
+pub struct CharacterCooldown {
     pub cooldown: i32,
     pub cooldown_expiration: chrono::DateTime<chrono::Utc>,
 }

@@ -1,4 +1,4 @@
-use crate::api::{Endpoint, PageInput, PageOutput};
+use crate::api::{Endpoint, NoBody, PageInput, PageOutput};
 
 use super::{
     achievements::{AchievementRewards, AchievementType},
@@ -92,6 +92,7 @@ pub struct GetAccountCharactersResponse {
 
 impl Endpoint for CreateAccountRequest {
     type Response = CreateAccountResponse;
+    type RequestBody = NoBody;
 
     fn http_request_method() -> http::Method {
         http::Method::POST
@@ -104,6 +105,7 @@ impl Endpoint for CreateAccountRequest {
 
 impl Endpoint for GetAccountAchievementsRequest {
     type Response = GetAccountAchievementsResponse;
+    type RequestBody = NoBody;
 
     fn http_request_method() -> http::Method {
         http::Method::GET
@@ -129,6 +131,7 @@ impl Endpoint for GetAccountAchievementsRequest {
 
 impl Endpoint for GetAccountRequest {
     type Response = GetAccountResponse;
+    type RequestBody = NoBody;
 
     fn http_request_method() -> http::Method {
         http::Method::GET
@@ -141,6 +144,7 @@ impl Endpoint for GetAccountRequest {
 
 impl Endpoint for GetAccountCharactersRequest {
     type Response = GetAccountCharactersResponse;
+    type RequestBody = NoBody;
 
     fn http_request_method() -> http::Method {
         http::Method::GET

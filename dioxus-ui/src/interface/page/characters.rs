@@ -36,8 +36,10 @@ pub fn Characters() -> Element {
         filtered_characters
     });
 
-    spawn(async move {
-        update_characters(&api_key()).await;
+    use_effect(move || {
+        spawn(async move {
+            update_characters(&api_key()).await;
+        });
     });
 
     rsx! {

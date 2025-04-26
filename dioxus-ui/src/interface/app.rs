@@ -7,6 +7,7 @@ use std::{
 use artifacts_mmo::api::v4::{
     characters::Character,
     maps::Map,
+    monsters::Monster,
     status::{GameStatus, ServerStatus},
 };
 use chrono::DateTime;
@@ -32,16 +33,17 @@ use crate::{
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ApplicationState {
-    pub artifacts_server_status: ServerStatus,
     pub api_token: String,
+    pub artifacts_server_status: ServerStatus,
     pub characters: Remote<Vec<Character>>,
-    pub map_tiles: Remote<Vec<Map>>,
-    pub sever_status: Remote<GameStatus>,
     pub current_theme: Theme,
     pub date_time: DateTime<chrono::Local>,
     pub full_day_month_date: String,
     pub full_timestamp_shorthand: String,
+    pub map_tiles: Remote<Vec<Map>>,
+    pub monsters: Remote<Vec<Monster>>,
     pub session_start: DateTime<chrono::Local>,
+    pub sever_status: Remote<GameStatus>,
     pub sound_on: bool,
     pub timezone: String,
 }
@@ -53,16 +55,17 @@ pub struct Assets {
 
 pub static APPLICATION_STATE: GlobalSignal<ApplicationState> =
     Signal::global(|| ApplicationState {
-        artifacts_server_status: ServerStatus::Unknown,
         api_token: String::new(),
+        artifacts_server_status: ServerStatus::Unknown,
         characters: Remote::default(),
-        map_tiles: Remote::default(),
-        sever_status: Remote::default(),
         current_theme: Theme::Dark,
         date_time: chrono::Local::now(),
         full_day_month_date: "".to_string(),
         full_timestamp_shorthand: "".to_string(),
+        map_tiles: Remote::default(),
+        monsters: Remote::default(),
         session_start: chrono::Local::now(),
+        sever_status: Remote::default(),
         sound_on: true,
         timezone: iana_time_zone::get_timezone().unwrap_or("Unknown Timezone".to_string()),
     });
@@ -77,9 +80,16 @@ pub static HTTP_CLIENT: GlobalSignal<ureq::Agent> = Global::new(|| ureq::agent()
 pub fn App() -> Element {
     blur_window(&use_window().window);
 
-    spawn(async move {
-        load_sounds();
-        play_hero_simple_celebration_03();
+    use_effect(move || {
+        spawn(async move {
+            if APPLICATION_STATE().sever_status.is_out_of_sync() {
+                spawn(async move {
+                    crate::interface::component::status::refresh_status().await;
+                });
+            }
+            load_sounds();
+            play_hero_simple_celebration_03();
+        });
     });
 
     rsx! {
