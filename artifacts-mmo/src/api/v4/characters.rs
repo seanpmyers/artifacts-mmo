@@ -1,4 +1,4 @@
-use crate::api::{Endpoint, NoBody, PageOutput};
+use crate::api::{CharacterActionQueue, Endpoint, NoBody, PageOutput};
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 pub struct GetCharacterRequest {
@@ -264,4 +264,34 @@ pub struct Fishing {
 pub struct Location {
     pub x: i32,
     pub y: i32,
+}
+
+impl Character {
+    pub fn to_name_map(characters: &Vec<Self>) -> std::collections::HashMap<String, Character> {
+        std::collections::HashMap::from_iter(
+            characters
+                .iter()
+                .map(|character| (character.profile.name.clone(), character.clone())),
+        )
+    }
+
+    pub fn to_index_map(characters: &Vec<Self>) -> std::collections::HashMap<String, usize> {
+        std::collections::HashMap::from_iter(
+            characters
+                .iter()
+                .enumerate()
+                .map(|(i, character)| (character.profile.name.clone(), i)),
+        )
+    }
+
+    pub fn to_action_queue_list(characters: &Vec<Self>) -> Vec<CharacterActionQueue> {
+        characters
+            .iter()
+            .map(|character| CharacterActionQueue {
+                character_name: character.profile.name.clone(),
+                paused: true,
+                queue: Vec::new(),
+            })
+            .collect()
+    }
 }

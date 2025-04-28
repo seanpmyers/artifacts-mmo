@@ -192,6 +192,7 @@ pub enum PlayerAction {
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct CharacterActionQueue {
+    pub character_name: String,
     pub paused: bool,
     pub queue: Vec<PlayerAction>,
 }

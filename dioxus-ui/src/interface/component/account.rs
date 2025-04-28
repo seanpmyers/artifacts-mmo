@@ -2,14 +2,19 @@ use dioxus::prelude::*;
 use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
 use crate::{
-    constants::css::{CANVAS, IMAGE_ICON},
+    constants::{
+        self,
+        css::{CANVAS, IMAGE_ICON},
+    },
     interface::widget::audible_button::AudibleButton,
 };
 
 #[component]
 pub fn Account() -> Element {
-    let mut api_key: Signal<String> =
-        use_synced_storage::<LocalStorage, String>("api_key".to_string(), String::new);
+    let mut api_key: Signal<String> = use_synced_storage::<LocalStorage, String>(
+        constants::API_KEY_STORAGE_KEY.to_string(),
+        String::new,
+    );
 
     let mut hidden: Signal<bool> = use_signal(|| true);
     let mut editing: Signal<bool> = use_signal(|| false);

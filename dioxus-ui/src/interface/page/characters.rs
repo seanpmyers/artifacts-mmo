@@ -5,7 +5,7 @@ use dioxus_sdk::storage::{use_synced_storage, LocalStorage};
 
 use crate::constants::css::{self, ARTIFACTS_HEADER, CANVAS, MY_CHARACTERS};
 use crate::interface::app::{ApplicationState, APPLICATION_STATE, HTTP_CLIENT};
-use crate::interface::component::character::Character as CharacterComponent;
+use crate::interface::component::character::CharacterComponent;
 use crate::interface::widget::audible_button::AudibleButton;
 
 #[component]

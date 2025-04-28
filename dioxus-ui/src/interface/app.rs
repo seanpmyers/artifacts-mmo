@@ -27,8 +27,8 @@ use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
 use super::style::theme::Theme;
 use crate::{
-    constants::{AUDIO_PATHS, BUTTON_CLICK_SOUND, HERO_SIMPLE_CELEBRATION_03_SOUND},
-    interface::router::route::Route,
+    constants::{self, AUDIO_PATHS, BUTTON_CLICK_SOUND, HERO_SIMPLE_CELEBRATION_03_SOUND},
+    interface::{page::characters::update_characters, router::route::Route},
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -75,18 +75,26 @@ pub static ASSETS: GlobalSignal<Assets> = Signal::global(|| Assets {
 });
 
 pub static HTTP_CLIENT: GlobalSignal<ureq::Agent> = Global::new(|| ureq::agent());
+pub static CHARACTER_MAP: GlobalMemo<std::collections::HashMap<String, usize>> =
+    GlobalMemo::new(|| match APPLICATION_STATE().characters.data {
+        Some(characters) => Character::to_index_map(&characters),
+        None => HashMap::new(),
+    });
 
 #[component]
 pub fn App() -> Element {
     blur_window(&use_window().window);
+    let api_key: Signal<String> = dioxus_sdk::storage::use_synced_storage::<
+        dioxus_sdk::storage::LocalStorage,
+        String,
+    >(constants::API_KEY_STORAGE_KEY.to_string(), String::new);
 
     use_effect(move || {
         spawn(async move {
             if APPLICATION_STATE().sever_status.is_out_of_sync() {
-                spawn(async move {
-                    crate::interface::component::status::refresh_status().await;
-                });
+                crate::interface::component::status::refresh_status().await;
             }
+            update_characters(&api_key()).await;
             load_sounds();
             play_hero_simple_celebration_03();
         });

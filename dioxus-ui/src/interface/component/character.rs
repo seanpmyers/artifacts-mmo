@@ -10,7 +10,7 @@ use crate::{
 };
 
 #[component]
-pub fn Character(character: artifacts_mmo::api::v4::characters::Character) -> Element {
+pub fn CharacterComponent(character: artifacts_mmo::api::v4::characters::Character) -> Element {
     let character_json_string: String =
         serde_json::to_string_pretty(&character).unwrap_or("None".to_string());
     let character_clone = character.clone();
