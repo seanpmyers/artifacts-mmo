@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use artifacts_mmo::api::{
     v4::{
         self,
@@ -7,35 +9,54 @@ use artifacts_mmo::api::{
         my_characters::GetMyCharactersRequest,
         status::{GameStatus, StatusRequest},
     },
-    Endpoint,
+    CharacterActionQueue, Endpoint, PlayerAction,
 };
 
 use crate::constants;
 
 pub const REPAINT_AFTER_SECONDS: f32 = 1_f32;
 
+#[derive(Default, PartialEq)]
+pub enum View {
+    #[default]
+    Play,
+    Settings,
+}
+
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[derive(serde::Serialize, serde::Deserialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct ApplicationState {
     pub account: Account,
-    pub server_status: Option<GameStatus>,
-    pub characters: Vec<Character>,
-    pub monsters: Vec<Monster>,
     pub map_tiles: Vec<Map>,
+    pub monsters: Vec<Monster>,
+
+    #[serde(skip)]
+    pub map_scene_view_bounds: egui::Rect,
+    #[serde(skip)]
+    pub view: View,
+    #[serde(skip)]
+    pub game_state: GameState,
     #[serde(skip)]
     pub system: System,
+    #[serde(skip)]
+    pub queue_action: QueueAction,
+    #[serde(skip)]
+    pub action_queues: HashMap<String, CharacterActionQueue>,
 }
 
 impl Default for ApplicationState {
     fn default() -> Self {
         Self {
             account: Default::default(),
-            server_status: Default::default(),
-            characters: Default::default(),
+            game_state: Default::default(),
             monsters: Default::default(),
             map_tiles: Default::default(),
             system: Default::default(),
+            queue_action: Default::default(),
+            map_scene_view_bounds: egui::Rect::ZERO,
+            view: Default::default(),
+            action_queues: Default::default(),
         }
     }
 }
@@ -49,6 +70,7 @@ pub struct System {
     pub timezone: Option<chrono_tz::Tz>,
     pub http_client: ureq::Agent,
     pub promises: Promises,
+    pub current_time: chrono::DateTime<chrono::Local>,
 }
 
 impl Default for System {
@@ -57,6 +79,7 @@ impl Default for System {
             timezone: None,
             http_client: ureq::agent(),
             promises: Default::default(),
+            current_time: chrono::Local::now(),
         }
     }
 }
@@ -65,6 +88,21 @@ impl Default for System {
 pub struct Promises {
     pub system_status: Option<poll_promise::Promise<Option<GameStatus>>>,
     pub my_characters: Option<poll_promise::Promise<Vec<Character>>>,
+    pub movement: Option<poll_promise::Promise<Option<v4::my_characters::CharacterMovement>>>,
+}
+
+#[derive(Default)]
+pub struct QueueAction {
+    pub character_name: Option<String>,
+    pub selected_action: Option<Action>,
+    pub move_x: i32,
+    pub move_y: i32,
+}
+
+#[derive(Default)]
+pub struct GameState {
+    pub server_status: Option<GameStatus>,
+    pub characters: HashMap<String, Character>,
 }
 
 impl ApplicationState {
@@ -136,33 +174,30 @@ impl eframe::App for ApplicationState {
             });
         });
         egui::SidePanel::left("left_panel").show(context, |ui| {
-
-            // ui.vertical(|ui| {
-            //     ui.selectable_value(&mut self.device.current_tab, Tab::Chronicle, "Chronicle");
-            //     ui.selectable_value(&mut self.device.current_tab, Tab::Lore, "Lore");
-            //     ui.selectable_value(&mut self.device.current_tab, Tab::You, "You");
-            //     ui.selectable_value(&mut self.device.current_tab, Tab::Timeline, "Timeline");
-            //     ui.selectable_value(&mut self.device.current_tab, Tab::Settings, "Settings");
-            // });
+            ui.vertical(|ui| {
+                ui.selectable_value(&mut self.view, View::Play, "Play");
+                ui.selectable_value(&mut self.view, View::Settings, "Settings");
+            });
         });
         egui::SidePanel::right("right_panel")
-            .min_width(0.0f32)
+            // .min_width(0.0f32)
             .show(context, |ui| {
                 // task_widget(ui, self, "side_panel_tasks".to_string());
             });
         egui::CentralPanel::default().show(context, |ui| {
             // The central panel the region left after adding TopPanel's and SidePanel's
-            ui.heading(constants::APPLICATION_TITLE);
-            api_token_widget(self, ui);
-            character_widget(ui, &self.characters);
-            // match self.device.current_tab {
-            //     Tab::Chronicle => chronicle_widget(ui, self),
-            //     Tab::Lore => lore_widget(ui, self),
-            //     Tab::Word => word_view(ui, self),
-            //     Tab::You => you(ui, self),
-            //     Tab::Settings => settings(ui, self),
-            //     Tab::Timeline => timeline_widget(ui, self),
-            // }
+
+            match self.view {
+                View::Play => {
+                    play_view_widget(self, ui);
+                }
+                View::Settings => {
+                    ui.heading(constants::APPLICATION_TITLE);
+                    api_token_widget(self, ui);
+                    character_widget(self, ui);
+                    play_widget(self, ui);
+                }
+            }
 
             // if self.device.widgets.settings.save_modal_open {
             //     let _ = &Modal::new(Id::new("save_result_modal")).show(ui.ctx(), |ui| {
@@ -187,31 +222,42 @@ impl eframe::App for ApplicationState {
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |_| {});
         });
-        // if self.device.global_context_menu.is_open {
-        //     if let Some(right_click_position) = self.device.global_context_menu.position {
-        //         Window::new("Quick Actions")
-        //             .id("global_context_menu".into())
-        //             .fixed_pos(right_click_position)
-        //             .collapsible(false)
-        //             .resizable(false)
-        //             .frame(egui::Frame::popup(&context.style()))
-        //             .show(context, |ui| {
-        //                 save_load_buttons(ui, self);
-        //             });
-        //     }
-        // }
+
+        if let Some(promise) = &self.system.promises.movement {
+            if let Some(possible_movement) = promise.ready() {
+                if let Some(movement) = possible_movement {
+                    //TODO
+                    log::info!("{:?}", movement.cooldown);
+                    if let Some(character) = self
+                        .game_state
+                        .characters
+                        .get_mut(&movement.character.profile.name)
+                    {
+                        *character = movement.character.clone();
+                    }
+                }
+                log::info!("SETTING MOVE PROMISE TO NONE");
+                self.system.promises.movement = None;
+            }
+        }
         if let Some(promise) = &self.system.promises.system_status {
             if let Some(server_status) = promise.ready() {
-                self.server_status = server_status.to_owned();
+                self.game_state.server_status = server_status.to_owned();
+                self.system.promises.system_status = None;
             }
         }
         if let Some(promise) = &self.system.promises.my_characters {
             if let Some(characters) = promise.ready() {
-                self.characters = characters.to_owned();
+                self.game_state.characters = characters
+                    .to_owned()
+                    .into_iter()
+                    .map(|character| (character.profile.name.clone(), character))
+                    .collect();
+                self.system.promises.my_characters = None;
             }
         }
         context.request_repaint_after_secs(REPAINT_AFTER_SECONDS);
-        // self.device.current_time = chrono::Local::now();
+        self.system.current_time = chrono::Local::now();
     }
 }
 
@@ -248,7 +294,7 @@ pub fn set_timezone(state: &mut ApplicationState) {
 }
 
 pub fn server_status_widget(state: &mut ApplicationState, ui: &mut egui::Ui) {
-    if let Some(status) = &state.server_status {
+    if let Some(status) = &state.game_state.server_status {
         ui.horizontal(|ui| {
             ui.label(format!("v{}", status.version));
             ui.label(status.status.clone());
@@ -259,25 +305,27 @@ pub fn server_status_widget(state: &mut ApplicationState, ui: &mut egui::Ui) {
 
 pub fn server_status_refresh_button(state: &mut ApplicationState, ui: &mut egui::Ui) {
     if ui.button("Sync Server Status").clicked() {
-        let api_token = state.account.api_token.clone();
-        let mut agent = state.system.http_client.clone();
-        let context = ui.ctx().clone();
-        let promise = poll_promise::Promise::spawn_thread("server_status_thread", move || {
-            let request: StatusRequest = StatusRequest::default();
-            let result = match request.call(&mut agent, api_token) {
-                artifacts_mmo::api::EndpointResponse::Error => {
-                    log::error!("Request ERROR!");
-                    None
-                }
-                artifacts_mmo::api::EndpointResponse::Success(response) => {
-                    return Some(response.data);
-                }
-            };
-            context.request_repaint();
-            result
-        });
-        state.system.promises.system_status = Some(promise);
+        server_status_request(state);
     }
+}
+
+pub fn server_status_request(state: &mut ApplicationState) {
+    let api_token = state.account.api_token.clone();
+    let mut agent = state.system.http_client.clone();
+    let promise = poll_promise::Promise::spawn_thread("server_status_thread", move || {
+        let request: StatusRequest = StatusRequest::default();
+        let result = match request.call(&mut agent, api_token) {
+            artifacts_mmo::api::EndpointResponse::Error => {
+                log::error!("Request ERROR!");
+                None
+            }
+            artifacts_mmo::api::EndpointResponse::Success(response) => {
+                return Some(response.data);
+            }
+        };
+        result
+    });
+    state.system.promises.system_status = Some(promise);
 }
 
 pub fn character_image_widget(ui: &mut egui::Ui, uri: String) {
@@ -309,9 +357,10 @@ pub fn sync_character_button(state: &mut ApplicationState, ui: &mut egui::Ui) {
     }
 }
 
-pub fn character_widget(ui: &mut egui::Ui, characters: &Vec<Character>) {
+pub fn character_widget(state: &mut ApplicationState, ui: &mut egui::Ui) {
+    let characters: Vec<Character> = state.game_state.characters.clone().into_values().collect();
     egui::ScrollArea::vertical()
-        .auto_shrink(false)
+        .auto_shrink(true)
         .show(ui, |ui| {
             egui::Grid::new("character_grid")
                 .spacing(egui::vec2(ui.spacing().item_spacing.x * 3f32, 0.0))
@@ -327,6 +376,11 @@ pub fn character_widget(ui: &mut egui::Ui, characters: &Vec<Character>) {
                             "Location: ({}, {})",
                             character.location.x, character.location.y
                         ));
+                        ui.label(format!(
+                            "Cooldown expires: {}",
+                            character.cooldown.cooldown_expiration
+                        ));
+                        add_action_to_queue_widget(state, ui, character.clone());
                         ui.end_row();
                     }
                 });
@@ -338,4 +392,206 @@ pub fn api_token_widget(state: &mut ApplicationState, ui: &mut egui::Ui) {
         ui.label("API Token");
         ui.text_edit_singleline(&mut state.account.api_token);
     });
+}
+
+#[derive(Default, Copy, Clone, PartialEq)]
+pub enum Action {
+    #[default]
+    Move,
+}
+
+impl Action {
+    pub fn iterator() -> impl Iterator<Item = Action> {
+        [Action::Move].iter().copied()
+    }
+}
+
+impl std::fmt::Display for Action {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Action::Move => "Move",
+            }
+        )
+    }
+}
+
+pub fn reset_queue_action(state: &mut ApplicationState) {
+    state.queue_action.selected_action = None;
+    state.queue_action.move_x = 0;
+    state.queue_action.move_y = 0;
+    state.queue_action.character_name = None;
+}
+
+pub fn add_action_to_queue_widget(
+    state: &mut ApplicationState,
+    ui: &mut egui::Ui,
+    character: Character,
+) {
+    ui.horizontal(|ui| {
+        if ui.button("Add action").clicked() {
+            reset_queue_action(state);
+            state.queue_action.character_name = Some(character.profile.name.clone());
+        }
+        if state
+            .queue_action
+            .character_name
+            .clone()
+            .is_some_and(|x| x.eq_ignore_ascii_case(&character.profile.name))
+        {
+            egui::ComboBox::from_id_salt(format!("new_action_{}", character.profile.name))
+                .selected_text(match &state.queue_action.selected_action {
+                    Some(action) => action.to_string(),
+                    None => String::new(),
+                })
+                .show_ui(ui, |ui| {
+                    ui.selectable_value(&mut state.queue_action.selected_action, None, "None");
+                    for action in Action::iterator() {
+                        ui.selectable_value(
+                            &mut state.queue_action.selected_action,
+                            Some(action),
+                            action.to_string(),
+                        );
+                    }
+                });
+
+            if let Some(action) = state.queue_action.selected_action {
+                match action {
+                    Action::Move => {
+                        ui.horizontal(|ui| {
+                            ui.label("Move");
+                            ui.add(
+                                egui::DragValue::new(&mut state.queue_action.move_x)
+                                    .range(-5i32..=15i32)
+                                    .prefix("x: "),
+                            );
+                            ui.add(
+                                egui::DragValue::new(&mut state.queue_action.move_y)
+                                    .range(-5i32..=15i32)
+                                    .prefix("y: "),
+                            );
+                        });
+                    }
+                }
+            }
+            if ui.button("Save").clicked() {
+                let new_action: PlayerAction =
+                    PlayerAction::Move(v4::my_characters::ActionMoveRequest {
+                        name: character.profile.name.clone(),
+                        body: v4::characters::Location {
+                            x: state.queue_action.move_x,
+                            y: state.queue_action.move_y,
+                        },
+                    });
+                state
+                    .action_queues
+                    .entry(character.profile.name.clone())
+                    .and_modify(|x| x.queue.push(new_action.clone()))
+                    .or_insert(CharacterActionQueue {
+                        character_name: character.profile.name.clone(),
+                        paused: true,
+                        queue: vec![new_action],
+                    });
+                reset_queue_action(state);
+            }
+        }
+    });
+}
+
+pub fn play_widget(state: &mut ApplicationState, ui: &mut egui::Ui) {
+    match state.action_queues.is_empty() {
+        true => {
+            ui.label("No actions queued.");
+        }
+        false => {
+            ui.label("Queue");
+            if ui.button("Clear").clicked() {
+                state.action_queues.clear();
+            }
+            for (character_name, queue) in state.action_queues.iter_mut() {
+                ui.vertical(|ui| {
+                    ui.label(format!("Queue for:  {}", character_name.clone()));
+                    ui.label(format!("Paused: {}", queue.paused));
+                    for (i, action) in queue.queue.iter().enumerate() {
+                        ui.label(format!(
+                            "{} {}",
+                            i.saturating_add(1).to_string(),
+                            action.to_string()
+                        ));
+                    }
+                });
+                ui.horizontal(|ui| {
+                    if ui.button("Pause/Unpause").clicked() {
+                        queue.paused = !queue.paused;
+                    }
+                    if ui.button("Delete").clicked() {}
+                });
+            }
+            for (name, character_queue) in state.action_queues.clone().iter() {
+                if character_queue.paused {
+                    continue;
+                }
+                if let Some(x) = state.game_state.characters.get(name) {
+                    if x.cooldown.cooldown_expiration > chrono::Utc::now() {
+                        log::info!(
+                            "Cooldown active for {}. Expires at: {} ",
+                            name,
+                            x.cooldown.cooldown_expiration
+                        );
+                        continue;
+                    }
+                }
+                for action in character_queue.queue.iter() {
+                    match action {
+                        PlayerAction::Move(action_move_request) => {
+                            move_character(state, action_move_request.clone())
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+pub fn move_character(state: &mut ApplicationState, request: v4::my_characters::ActionMoveRequest) {
+    let api_token = state.account.api_token.clone();
+    let mut agent = state.system.http_client.clone();
+    let promise = poll_promise::Promise::spawn_thread("move_character_thread", move || {
+        match request.call(&mut agent, api_token) {
+            artifacts_mmo::api::EndpointResponse::Error => {
+                log::error!("Request ERROR!")
+            }
+            artifacts_mmo::api::EndpointResponse::Success(response) => {
+                return Some(response.data);
+            }
+        };
+
+        None
+    });
+
+    state.system.promises.movement = Some(promise);
+}
+
+pub fn play_view_widget(state: &mut ApplicationState, ui: &mut egui::Ui) {
+    egui::Frame::group(ui.style())
+        .inner_margin(0.0f32)
+        .show(ui, |ui| {
+            let scene = egui::Scene::new().zoom_range(0.1..=2.0);
+            let response = scene
+                .show(ui, &mut state.map_scene_view_bounds, |ui| {
+                    match state.map_tiles.is_empty() {
+                        true => {
+                            ui.label("Map not loaded.");
+                        }
+                        false => {}
+                    }
+                })
+                .response;
+
+            if response.double_clicked() {
+                state.map_scene_view_bounds = egui::Rect::ZERO;
+            }
+        });
 }

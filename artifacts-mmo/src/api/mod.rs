@@ -190,6 +190,18 @@ pub enum PlayerAction {
     Move(ActionMoveRequest),
 }
 
+impl std::fmt::Display for PlayerAction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                PlayerAction::Move(action_move_request) => "Move",
+            }
+        )
+    }
+}
+
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct CharacterActionQueue {
     pub character_name: String,
