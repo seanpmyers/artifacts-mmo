@@ -9,7 +9,7 @@ use artifacts_mmo::api::{
         my_characters::GetMyCharactersRequest,
         status::{GameStatus, StatusRequest},
     },
-    CharacterActionQueue, Endpoint, PlayerAction,
+    CharacterActionQueue, Endpoint, PageInput, PlayerAction,
 };
 
 use crate::constants;
@@ -88,6 +88,7 @@ impl Default for System {
 pub struct Promises {
     pub system_status: Option<poll_promise::Promise<Option<GameStatus>>>,
     pub my_characters: Option<poll_promise::Promise<Vec<Character>>>,
+    pub map_tiles: Option<poll_promise::Promise<Vec<Map>>>,
     pub movement: Option<poll_promise::Promise<Option<v4::my_characters::CharacterMovement>>>,
 }
 
@@ -155,6 +156,7 @@ impl eframe::App for ApplicationState {
                     egui::widgets::global_theme_preference_buttons(ui);
                     server_status_refresh_button(self, ui);
                     sync_character_button(self, ui);
+                    sync_map_button(self, ui);
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                         ui.horizontal_wrapped(|ui| {
                             egui::warn_if_debug_build(ui);
@@ -256,6 +258,12 @@ impl eframe::App for ApplicationState {
                 self.system.promises.my_characters = None;
             }
         }
+        if let Some(promise) = &self.system.promises.map_tiles {
+            if let Some(map_tiles) = promise.ready() {
+                self.map_tiles = map_tiles.to_owned();
+                self.system.promises.map_tiles = None;
+            }
+        }
         context.request_repaint_after_secs(REPAINT_AFTER_SECONDS);
         self.system.current_time = chrono::Local::now();
     }
@@ -337,6 +345,46 @@ pub fn character_image_widget(ui: &mut egui::Ui, uri: String) {
     );
 }
 
+pub fn test_widget(ui: &mut egui::Ui) {
+    ui.label("TESTING");
+}
+
+pub fn map_image_widget(ui: &mut egui::Ui, uri: String, map_tile_details: &Map) {
+    let map_tile_text = format!(
+        "{} ({}, {})",
+        map_tile_details.name, map_tile_details.x, map_tile_details.y
+    );
+    let response = ui.add(
+        egui::Image::new(uri)
+            .fit_to_original_size(0.5f32)
+            .max_width(constants::MAP_IMAGE_HEIGHT_WIDTH.1)
+            .max_height(constants::MAP_IMAGE_HEIGHT_WIDTH.0),
+    );
+
+    if response.contains_pointer() {
+        ui.painter()
+            .rect_filled(response.rect, 0f32, egui::Color32::from_black_alpha(192));
+
+        // ui.put(response.rect, egui::Label::new(&map_tile_text));
+        // let layer_id = egui::LayerId::new(egui::Order::Foreground, egui::Id::new("tile_overlay"));
+        // ui.put(
+        //     egui::Rect {
+        //         min: response.rect.min,
+        //         max: response.rect.min,
+        //     },
+        //     egui::Label::new(egui::RichText::new(&map_tile_text).size(10f32)),
+        // );
+
+        ui.painter().text(
+            response.rect.center(),
+            egui::Align2::CENTER_CENTER,
+            &map_tile_text,
+            egui::TextStyle::Heading.resolve(ui.style()),
+            egui::Color32::WHITE,
+        );
+    };
+}
+
 pub fn sync_character_button(state: &mut ApplicationState, ui: &mut egui::Ui) {
     if ui.button("Sync Characters").clicked() {
         let api_token = state.account.api_token.clone();
@@ -355,6 +403,53 @@ pub fn sync_character_button(state: &mut ApplicationState, ui: &mut egui::Ui) {
         });
         state.system.promises.my_characters = Some(promise);
     }
+}
+
+pub fn sync_map_button(state: &mut ApplicationState, ui: &mut egui::Ui) {
+    if ui.button("Sync Map").clicked() {
+        let api_token = state.account.api_token.clone();
+        let mut agent = state.system.http_client.clone();
+        let promise = poll_promise::Promise::spawn_thread("map_sync_thread", move || {
+            get_map_tiles(&api_token, &mut agent)
+        });
+        state.system.promises.map_tiles = Some(promise);
+    }
+}
+
+pub fn get_map_tiles(api_key: &str, client: &mut ureq::Agent) -> Vec<Map> {
+    let mut map_tiles = Vec::new();
+    let first_page = 1u32;
+    let mut request = v4::maps::GetAllMapsRequest {
+        content_code: None,
+        content_type: None,
+        page_input: PageInput {
+            size: Some(artifacts_mmo::api::PAGE_SIZE_MAX),
+            page: Some(first_page),
+        },
+    };
+    match request.call(client, api_key.to_string()) {
+        artifacts_mmo::api::EndpointResponse::Error => log::error!("Failed to get map tiles."),
+        artifacts_mmo::api::EndpointResponse::Success(mut response) => {
+            map_tiles.append(&mut response.data);
+            if response.page_output.pages.eq(&first_page) {
+                return map_tiles;
+            }
+
+            for page in (first_page + 1)..response.page_output.pages.saturating_add(1) {
+                request.page_input.page = Some(page);
+                match request.call(client, api_key.to_string()) {
+                    artifacts_mmo::api::EndpointResponse::Error => {
+                        log::error!("Failed to get map tiles.Page: {}", page)
+                    }
+                    artifacts_mmo::api::EndpointResponse::Success(mut response) => {
+                        map_tiles.append(&mut response.data)
+                    }
+                }
+            }
+        }
+    };
+
+    map_tiles
 }
 
 pub fn character_widget(state: &mut ApplicationState, ui: &mut egui::Ui) {
@@ -585,7 +680,23 @@ pub fn play_view_widget(state: &mut ApplicationState, ui: &mut egui::Ui) {
                         true => {
                             ui.label("Map not loaded.");
                         }
-                        false => {}
+                        false => {
+                            egui::Grid::new("map_grid")
+                                .spacing(egui::vec2(ui.spacing().item_spacing.x * 0f32, 0.0))
+                                .show(ui, |ui| {
+                                    for (i, tile) in state.map_tiles.iter().enumerate() {
+                                        map_image_widget(
+                                            ui,
+                                            v4::resources::ImageResourceType::Maps
+                                                .to_uri_string(&tile.skin.to_string()),
+                                            &tile,
+                                        );
+                                        if (i + 1) % 17 == 0 {
+                                            ui.end_row();
+                                        }
+                                    }
+                                });
+                        }
                     }
                 })
                 .response;
