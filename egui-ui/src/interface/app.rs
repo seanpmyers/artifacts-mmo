@@ -183,16 +183,17 @@ impl eframe::App for ApplicationState {
                     });
                 });
             });
-        });
-        egui::SidePanel::left("left_panel").show(context, |ui| {
-            ui.vertical(|ui| {
-                ui.selectable_value(&mut self.view, View::Play, "Play");
-                ui.selectable_value(&mut self.view, View::Settings, "Settings");
+            egui::menu::bar(ui, |ui| {
+                ui.horizontal(|ui| {
+                    ui.selectable_value(&mut self.view, View::Play, "Play");
+                    ui.selectable_value(&mut self.view, View::Settings, "Settings");
+                });
             });
         });
+        egui::SidePanel::left("left_panel").show(context, |_ui| {});
         egui::SidePanel::right("right_panel")
             // .min_width(0.0f32)
-            .show(context, |ui| {
+            .show(context, |_ui| {
                 // task_widget(ui, self, "side_panel_tasks".to_string());
             });
         egui::CentralPanel::default().show(context, |ui| {
@@ -352,10 +353,6 @@ pub fn character_image_widget(ui: &mut egui::Ui, uri: String) {
             .max_width(constants::CHARACTER_IMAGE_WIDTH)
             .max_height(constants::CHARACTER_IMAGE_HEIGHT),
     );
-}
-
-pub fn test_widget(ui: &mut egui::Ui) {
-    ui.label("TESTING");
 }
 
 pub fn map_image_widget(
@@ -719,14 +716,11 @@ pub fn play_view_widget(state: &mut ApplicationState, ui: &mut egui::Ui) {
                                     state.map_tile_overlay.position,
                                     egui::vec2(224f32, 224f32),
                                 );
-                                let map_tile_text = format!(
-                                    "{} ({}, {})",
-                                    hovered_tile.name, hovered_tile.x, hovered_tile.y
-                                );
+
                                 ui.put(
                                     overlay_rect,
                                     MapHoverDisplay {
-                                        text: map_tile_text,
+                                        map_tile: hovered_tile.clone(),
                                     },
                                 );
                             }
@@ -735,6 +729,26 @@ pub fn play_view_widget(state: &mut ApplicationState, ui: &mut egui::Ui) {
                 })
                 .response;
 
+            let characters: Vec<Character> =
+                state.game_state.characters.clone().into_values().collect();
+            for (_, character) in characters.into_iter().enumerate() {
+                egui::Window::new(&character.profile.name)
+                    .movable(true)
+                    .title_bar(false)
+                    .resizable(false)
+                    .default_width(500f32)
+                    .min_width(500f32)
+                    .default_pos(egui::pos2(ui.min_rect().center().x, ui.min_rect().bottom()))
+                    .show(ui.ctx(), |ui| {
+                        character_image_widget(
+                            ui,
+                            v4::resources::ImageResourceType::Characters
+                                .to_uri_string(&character.profile.skin.to_string()),
+                        );
+                        ui.label(&character.profile.name);
+                    });
+            }
+
             if response.double_clicked() {
                 state.map_scene_view_bounds = egui::Rect::ZERO;
             }
@@ -742,14 +756,17 @@ pub fn play_view_widget(state: &mut ApplicationState, ui: &mut egui::Ui) {
 }
 
 pub struct MapHoverDisplay {
-    pub text: String,
+    pub map_tile: Map,
 }
 
 impl egui::Widget for MapHoverDisplay {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        let map_tile_text = format!(
+            "{} ({}, {})",
+            self.map_tile.name, self.map_tile.x, self.map_tile.y
+        );
         ui.vertical(|ui| {
-            ui.label(&self.text);
-            ui.button(&self.text);
+            ui.label(&map_tile_text);
         })
         .response
     }
