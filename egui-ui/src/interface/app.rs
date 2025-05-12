@@ -34,6 +34,8 @@ pub struct ApplicationState {
     #[serde(skip)]
     pub map_scene_view_bounds: egui::Rect,
     #[serde(skip)]
+    pub map_tile_overlay: MapTileOverlay,
+    #[serde(skip)]
     pub view: View,
     #[serde(skip)]
     pub game_state: GameState,
@@ -52,6 +54,7 @@ impl Default for ApplicationState {
             game_state: Default::default(),
             monsters: Default::default(),
             map_tiles: Default::default(),
+            map_tile_overlay: Default::default(),
             system: Default::default(),
             queue_action: Default::default(),
             map_scene_view_bounds: egui::Rect::ZERO,
@@ -104,6 +107,12 @@ pub struct QueueAction {
 pub struct GameState {
     pub server_status: Option<GameStatus>,
     pub characters: HashMap<String, Character>,
+}
+
+#[derive(Default)]
+pub struct MapTileOverlay {
+    pub position: egui::Pos2,
+    pub map: Option<Map>,
 }
 
 impl ApplicationState {
@@ -349,40 +358,34 @@ pub fn test_widget(ui: &mut egui::Ui) {
     ui.label("TESTING");
 }
 
-pub fn map_image_widget(ui: &mut egui::Ui, uri: String, map_tile_details: &Map) {
-    let map_tile_text = format!(
-        "{} ({}, {})",
-        map_tile_details.name, map_tile_details.x, map_tile_details.y
-    );
-    let response = ui.add(
-        egui::Image::new(uri)
-            .fit_to_original_size(0.5f32)
-            .max_width(constants::MAP_IMAGE_HEIGHT_WIDTH.1)
-            .max_height(constants::MAP_IMAGE_HEIGHT_WIDTH.0),
-    );
+pub fn map_image_widget(
+    ui: &mut egui::Ui,
+    uri: String,
+    map_tile: &Map,
+    overlay: &mut MapTileOverlay,
+) {
+    let (tile, sense) = ui.allocate_exact_size(egui::vec2(224f32, 224f32), egui::Sense::hover());
+    egui::Image::new(uri)
+        .fit_to_original_size(0.5f32)
+        .max_width(constants::MAP_IMAGE_HEIGHT_WIDTH.1)
+        .max_height(constants::MAP_IMAGE_HEIGHT_WIDTH.0)
+        .paint_at(ui, tile);
 
-    if response.contains_pointer() {
-        ui.painter()
-            .rect_filled(response.rect, 0f32, egui::Color32::from_black_alpha(192));
-
-        // ui.put(response.rect, egui::Label::new(&map_tile_text));
-        // let layer_id = egui::LayerId::new(egui::Order::Foreground, egui::Id::new("tile_overlay"));
-        // ui.put(
-        //     egui::Rect {
-        //         min: response.rect.min,
-        //         max: response.rect.min,
-        //     },
-        //     egui::Label::new(egui::RichText::new(&map_tile_text).size(10f32)),
-        // );
-
-        ui.painter().text(
-            response.rect.center(),
-            egui::Align2::CENTER_CENTER,
-            &map_tile_text,
-            egui::TextStyle::Heading.resolve(ui.style()),
-            egui::Color32::WHITE,
-        );
-    };
+    match sense.contains_pointer() {
+        true => {
+            ui.painter()
+                .rect_filled(tile, 0f32, egui::Color32::from_black_alpha(192));
+            overlay.map = Some(map_tile.clone());
+            overlay.position = tile.min;
+        }
+        false => {
+            if let Some(current_overlay_tile) = &overlay.map {
+                if current_overlay_tile.eq(map_tile) {
+                    overlay.map = None;
+                }
+            }
+        }
+    }
 }
 
 pub fn sync_character_button(state: &mut ApplicationState, ui: &mut egui::Ui) {
@@ -681,21 +684,52 @@ pub fn play_view_widget(state: &mut ApplicationState, ui: &mut egui::Ui) {
                             ui.label("Map not loaded.");
                         }
                         false => {
+                            ui.label(format!(
+                                "{} {:?}",
+                                &state.map_tile_overlay.position.to_string(),
+                                &state.map_tile_overlay.map.clone()
+                            ));
+
                             egui::Grid::new("map_grid")
+                                .max_col_width(224f32)
+                                .min_col_width(224f32)
+                                .num_columns(17)
                                 .spacing(egui::vec2(ui.spacing().item_spacing.x * 0f32, 0.0))
                                 .show(ui, |ui| {
+                                    if !state.map_tiles.is_empty() {
+                                        state.map_tile_overlay.map =
+                                            Some(state.map_tiles[0].clone());
+                                    }
                                     for (i, tile) in state.map_tiles.iter().enumerate() {
                                         map_image_widget(
                                             ui,
                                             v4::resources::ImageResourceType::Maps
                                                 .to_uri_string(&tile.skin.to_string()),
                                             &tile,
+                                            &mut state.map_tile_overlay,
                                         );
                                         if (i + 1) % 17 == 0 {
                                             ui.end_row();
                                         }
                                     }
                                 });
+
+                            if let Some(hovered_tile) = &state.map_tile_overlay.map {
+                                let overlay_rect = egui::Rect::from_min_size(
+                                    state.map_tile_overlay.position,
+                                    egui::vec2(224f32, 224f32),
+                                );
+                                let map_tile_text = format!(
+                                    "{} ({}, {})",
+                                    hovered_tile.name, hovered_tile.x, hovered_tile.y
+                                );
+                                ui.put(
+                                    overlay_rect,
+                                    MapHoverDisplay {
+                                        text: map_tile_text,
+                                    },
+                                );
+                            }
                         }
                     }
                 })
@@ -705,4 +739,18 @@ pub fn play_view_widget(state: &mut ApplicationState, ui: &mut egui::Ui) {
                 state.map_scene_view_bounds = egui::Rect::ZERO;
             }
         });
+}
+
+pub struct MapHoverDisplay {
+    pub text: String,
+}
+
+impl egui::Widget for MapHoverDisplay {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        ui.vertical(|ui| {
+            ui.label(&self.text);
+            ui.button(&self.text);
+        })
+        .response
+    }
 }
