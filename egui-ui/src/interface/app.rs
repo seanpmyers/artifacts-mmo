@@ -190,12 +190,12 @@ impl eframe::App for ApplicationState {
                 });
             });
         });
-        egui::SidePanel::left("left_panel").show(context, |_ui| {});
-        egui::SidePanel::right("right_panel")
-            // .min_width(0.0f32)
-            .show(context, |_ui| {
-                // task_widget(ui, self, "side_panel_tasks".to_string());
-            });
+        // egui::SidePanel::left("left_panel").show(context, |_ui| {});
+        // egui::SidePanel::right("right_panel")
+        //     // .min_width(0.0f32)
+        //     .show(context, |_ui| {
+        //         // task_widget(ui, self, "side_panel_tasks".to_string());
+        //     });
         egui::CentralPanel::default().show(context, |ui| {
             // The central panel the region left after adding TopPanel's and SidePanel's
 
@@ -681,11 +681,13 @@ pub fn play_view_widget(state: &mut ApplicationState, ui: &mut egui::Ui) {
                             ui.label("Map not loaded.");
                         }
                         false => {
-                            ui.label(format!(
-                                "{} {:?}",
-                                &state.map_tile_overlay.position.to_string(),
-                                &state.map_tile_overlay.map.clone()
-                            ));
+                            if cfg!(debug_assertions) {
+                                ui.label(format!(
+                                    "{} {:?}",
+                                    &state.map_tile_overlay.position.to_string(),
+                                    &state.map_tile_overlay.map.clone()
+                                ));
+                            }
 
                             egui::Grid::new("map_grid")
                                 .max_col_width(224f32)
@@ -719,7 +721,7 @@ pub fn play_view_widget(state: &mut ApplicationState, ui: &mut egui::Ui) {
 
                                 ui.put(
                                     overlay_rect,
-                                    MapHoverDisplay {
+                                    MapHoverDisplayWidget {
                                         map_tile: hovered_tile.clone(),
                                     },
                                 );
@@ -728,25 +730,10 @@ pub fn play_view_widget(state: &mut ApplicationState, ui: &mut egui::Ui) {
                     }
                 })
                 .response;
-
-            let characters: Vec<Character> =
-                state.game_state.characters.clone().into_values().collect();
-            for (_, character) in characters.into_iter().enumerate() {
-                egui::Window::new(&character.profile.name)
-                    .movable(true)
-                    .title_bar(false)
-                    .resizable(false)
-                    .default_width(500f32)
-                    .min_width(500f32)
-                    .default_pos(egui::pos2(ui.min_rect().center().x, ui.min_rect().bottom()))
-                    .show(ui.ctx(), |ui| {
-                        character_image_widget(
-                            ui,
-                            v4::resources::ImageResourceType::Characters
-                                .to_uri_string(&character.profile.skin.to_string()),
-                        );
-                        ui.label(&character.profile.name);
-                    });
+            if !state.game_state.characters.is_empty() {
+                ui.add(CharacterOverlayWidget {
+                    characters: state.game_state.characters.clone().into_values().collect(),
+                });
             }
 
             if response.double_clicked() {
@@ -755,11 +742,11 @@ pub fn play_view_widget(state: &mut ApplicationState, ui: &mut egui::Ui) {
         });
 }
 
-pub struct MapHoverDisplay {
+pub struct MapHoverDisplayWidget {
     pub map_tile: Map,
 }
 
-impl egui::Widget for MapHoverDisplay {
+impl egui::Widget for MapHoverDisplayWidget {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let map_tile_text = format!(
             "{} ({}, {})",
@@ -769,5 +756,33 @@ impl egui::Widget for MapHoverDisplay {
             ui.label(&map_tile_text);
         })
         .response
+    }
+}
+
+pub struct CharacterOverlayWidget {
+    pub characters: Vec<Character>,
+}
+
+impl egui::Widget for CharacterOverlayWidget {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        egui::Window::new("characters_overlay")
+            .movable(true)
+            .title_bar(false)
+            .resizable(false)
+            .show(ui.ctx(), |ui| {
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                    ui.vertical(|ui| {
+                        for (_, character) in self.characters.into_iter().enumerate() {
+                            character_image_widget(
+                                ui,
+                                v4::resources::ImageResourceType::Characters
+                                    .to_uri_string(&character.profile.skin.to_string()),
+                            );
+                            ui.label(&character.profile.name);
+                        }
+                    });
+                });
+            });
+        ui.response()
     }
 }
