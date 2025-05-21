@@ -368,6 +368,17 @@ pub fn map_image_widget(
         .max_height(constants::MAP_IMAGE_HEIGHT_WIDTH.0)
         .paint_at(ui, tile);
 
+    let character_position: egui::Pos2 = egui::pos2(tile.min.x + 20f32, tile.min.y);
+
+    egui::Image::new(v4::resources::ImageResourceType::Characters.to_uri_string("men1"))
+        .fit_to_original_size(0.5f32)
+        .max_width(constants::CHARACTER_IMAGE_WIDTH)
+        .max_height(constants::CHARACTER_IMAGE_HEIGHT)
+        .paint_at(
+            ui,
+            egui::Rect::from_min_size(tile.left_bottom(), constants::CHARACTER_MAP_SIZE),
+        );
+
     match sense.contains_pointer() {
         true => {
             ui.painter()
