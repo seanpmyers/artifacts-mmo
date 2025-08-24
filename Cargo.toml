@@ -1,6 +1,6 @@
 [workspace]
-members = ["artifacts-mmo", "egui-ui"]
-default-members = ["artifacts-mmo", "egui-ui"]
+members = ["artifacts-mmo", "egui-ui", "schema-converter"]
+default-members = ["artifacts-mmo", "egui-ui" ]
 resolver = "3"
 
 [workspace.package]

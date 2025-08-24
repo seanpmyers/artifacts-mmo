@@ -1,0 +1,8 @@
+{
+  "enum": [
+    "achievements_points",
+    "gold"
+  ],
+  "title": "AccountLeaderboardType",
+  "type": "string"
+}
