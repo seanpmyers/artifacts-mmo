@@ -1,6 +1,6 @@
 [workspace]
-members = ["artifacts-mmo", "dioxus-ui", "egui-ui"]
-default-members = ["artifacts-mmo", "dioxus-ui", "egui-ui"]
+members = ["artifacts-mmo", "egui-ui"]
+default-members = ["artifacts-mmo", "egui-ui"]
 resolver = "3"
 
 [workspace.package]
@@ -35,13 +35,6 @@ futures-util = "0.3.31"
 http = { version = "1.3.1" }
 # Logging
 log = { version = "0.4.27", features = ["serde"] }
-dioxus = { version = "0.6.3", features = ["desktop", "router"] }
-dioxus-logger = "0.6.2"
-dioxus-sdk = { version = "0.6.0", features = [
-	"clipboard",
-	"storage",
-	"web-sys",
-] }
 kira = "0.10.5"
 image = { version = "0.25.6", features = ["png"] }
 poll-promise = {version = "0.3.0", features = ["tokio"] }
