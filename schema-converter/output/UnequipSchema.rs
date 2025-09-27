@@ -3,6 +3,8 @@ pub struct UnequipSchema {
 	/// Quantity: Item quantity. Applicable to utilities only.
 	quantity: i32,
 	/// Item slot.
-	slot: TODO__NOT A SINGLE TYPE,
+	slot: #[serde(flatten)]
+	ItemSlot
+,
 
 }

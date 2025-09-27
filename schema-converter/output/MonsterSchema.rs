@@ -13,9 +13,9 @@ pub struct MonsterSchema {
 	/// Critical Strike: Monster % critical strike.
 	critical_strike: i32,
 	/// Drops: Monster drops. This is a list of items that the monster drops after killing the monster. 
-	drops: TODO__Vec<>,
+	drops: Vec<DropRateSchema>,
 	/// Effects: List of effects.
-	effects: TODO__Vec<>,
+	effects: Vec<SimpleEffectSchema>,
 	/// Hp: Monster hit points.
 	hp: i32,
 	/// Level: Monster level.

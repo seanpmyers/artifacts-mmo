@@ -1,10 +1,16 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct RewardDataSchema {
 	/// Player details.
-	character: TODO__NOT A SINGLE TYPE,
+	character: #[serde(flatten)]
+	CharacterSchema
+,
 	/// Cooldown details.
-	cooldown: TODO__NOT A SINGLE TYPE,
+	cooldown: #[serde(flatten)]
+	CooldownSchema
+,
 	/// Reward details.
-	rewards: TODO__NOT A SINGLE TYPE,
+	rewards: #[serde(flatten)]
+	RewardsSchema
+,
 
 }

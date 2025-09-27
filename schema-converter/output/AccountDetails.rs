@@ -3,7 +3,7 @@ pub struct AccountDetails {
 	/// Achievements Points: Achievement points.
 	achievements_points: i32,
 	/// Badges: Account badges.
-	badges: TODO__Vec<>,
+	badges: Vec<serde::Value>,
 	/// Ban Reason: Ban reason.
 	ban_reason: String,
 	/// Banned: Banned.
@@ -11,9 +11,11 @@ pub struct AccountDetails {
 	/// Member: Member status.
 	member: bool,
 	/// Skins: Skins owned.
-	skins: TODO__Vec<>,
+	skins: Vec<serde::Value>,
 	/// Account status.
-	status: TODO__NOT A SINGLE TYPE,
+	status: #[serde(flatten)]
+	AccountStatus
+,
 	/// Username: Username.
 	username: String,
 

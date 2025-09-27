@@ -1,14 +1,14 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct DataPage_EffectSchema_ {
 	/// Data
-	data: TODO__Vec<>,
+	data: Vec<EffectSchema>,
 	/// Page
-	page: TODO__NOT A SINGLE TYPE,
+	page: ,
 	/// Pages
-	pages: TODO__NOT A SINGLE TYPE,
+	pages: ,
 	/// Size
-	size: TODO__NOT A SINGLE TYPE,
+	size: ,
 	/// Total
-	total: TODO__NOT A SINGLE TYPE,
+	total: ,
 
 }

@@ -3,7 +3,9 @@ pub struct ConditionSchema {
 	/// Code: Condition code.
 	code: String,
 	/// Condition operator.
-	operator: TODO__NOT A SINGLE TYPE,
+	operator: #[serde(flatten)]
+	ConditionOperator
+,
 	/// Value: Condition value.
 	value: i32,
 

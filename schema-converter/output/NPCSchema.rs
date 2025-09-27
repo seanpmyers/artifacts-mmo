@@ -7,6 +7,8 @@ pub struct NPCSchema {
 	/// Name: Name of the NPC.
 	name: String,
 	/// Type of the NPC.
-	NPCSchema_type: TODO__NOT A SINGLE TYPE,
+	NPCSchema_type: #[serde(flatten)]
+	NPCType
+,
 
 }

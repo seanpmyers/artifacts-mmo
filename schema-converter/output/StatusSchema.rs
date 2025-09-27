@@ -1,7 +1,7 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct StatusSchema {
 	/// Announcements: Server announcements.
-	announcements: TODO__Vec<>,
+	announcements: Vec<AnnouncementSchema>,
 	/// Characters Online: Characters online.
 	characters_online: i32,
 	/// Max Level: Maximum level.
@@ -9,9 +9,11 @@ pub struct StatusSchema {
 	/// Max Skill Level: Maximum skill level.
 	max_skill_level: i32,
 	/// Rate Limits: Rate limits.
-	rate_limits: TODO__Vec<>,
+	rate_limits: Vec<RateLimitSchema>,
 	/// Current season details.
-	season: TODO__NOT A SINGLE TYPE,
+	season: #[serde(flatten)]
+	SeasonSchema
+,
 	/// Server Time: Server time.
 	server_time: chrono::DateTime<chrono::Utc>,
 	/// Version: Game version.

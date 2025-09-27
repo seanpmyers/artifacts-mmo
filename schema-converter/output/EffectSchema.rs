@@ -7,8 +7,12 @@ pub struct EffectSchema {
 	/// Name: Name of the effect.
 	name: String,
 	/// Subtype of the effect.
-	subtype: TODO__NOT A SINGLE TYPE,
+	subtype: #[serde(flatten)]
+	EffectSubtype
+,
 	/// Type of the effect.
-	EffectSchema_type: TODO__NOT A SINGLE TYPE,
+	EffectSchema_type: #[serde(flatten)]
+	EffectType
+,
 
 }

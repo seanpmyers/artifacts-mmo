@@ -3,6 +3,8 @@ pub struct EventContentSchema {
 	/// Code: Code content.
 	code: String,
 	/// Type of the event.
-	EventContentSchema_type: TODO__NOT A SINGLE TYPE,
+	EventContentSchema_type: #[serde(flatten)]
+	MapContentType
+,
 
 }

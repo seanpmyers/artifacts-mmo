@@ -1,6 +1,6 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct RecyclingItemsSchema {
 	/// Items: Objects received.
-	items: TODO__Vec<>,
+	items: Vec<DropSchema>,
 
 }

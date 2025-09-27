@@ -1,6 +1,6 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct MapResponseSchema {
 	/// MapSchema
-	data: TODO__OBJECT,
+	data: MapSchema,
 
 }

@@ -9,10 +9,14 @@ pub struct TaskFullSchema {
 	/// Min Quantity: Minimum amount of task.
 	min_quantity: i32,
 	/// Rewards.
-	rewards: TODO__NOT A SINGLE TYPE,
+	rewards: #[serde(flatten)]
+	RewardsSchema
+,
 	/// Skill: Skill required to complete the task.
-	skill: TODO__NOT A SINGLE TYPE,
+	skill: ,
 	/// Type: The type of task.
-	TaskFullSchema_type: TODO__NOT A SINGLE TYPE,
+	TaskFullSchema_type: #[serde(flatten)]
+	TaskType
+,
 
 }

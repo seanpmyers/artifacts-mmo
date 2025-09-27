@@ -1,10 +1,16 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct CharacterMovementDataSchema {
 	/// Character details.
-	character: TODO__NOT A SINGLE TYPE,
+	character: #[serde(flatten)]
+	CharacterSchema
+,
 	/// Cooldown details
-	cooldown: TODO__NOT A SINGLE TYPE,
+	cooldown: #[serde(flatten)]
+	CooldownSchema
+,
 	/// Destination details.
-	destination: TODO__NOT A SINGLE TYPE,
+	destination: #[serde(flatten)]
+	MapSchema
+,
 
 }

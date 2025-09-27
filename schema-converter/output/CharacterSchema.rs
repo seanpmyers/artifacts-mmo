@@ -73,7 +73,7 @@ pub struct CharacterSchema {
 	/// Hp: Character actual HP.
 	hp: i32,
 	/// Inventory: List of inventory slots.
-	inventory: TODO__Vec<>,
+	inventory: Vec<InventorySlot>,
 	/// Inventory Max Items: Inventory max items.
 	inventory_max_items: i32,
 	/// Jewelrycrafting Level: Jewelrycrafting level.
@@ -117,7 +117,9 @@ pub struct CharacterSchema {
 	/// Shield Slot: Shield slot.
 	shield_slot: String,
 	/// Character skin code.
-	skin: TODO__NOT A SINGLE TYPE,
+	skin: #[serde(flatten)]
+	CharacterSkin
+,
 	/// Speed: *Not available, on the roadmap. Character movement speed.
 	speed: i32,
 	/// Task: Task in progress.

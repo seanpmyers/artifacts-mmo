@@ -1,7 +1,7 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct MapSchema {
 	/// Content of the map.
-	content: TODO__NOT A SINGLE TYPE,
+	content: ,
 	/// Name: Name of the map.
 	name: String,
 	/// Skin: Skin of the map.

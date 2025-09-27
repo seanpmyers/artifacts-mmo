@@ -9,6 +9,8 @@ pub struct AccountLeaderboardSchema {
 	/// Position: Position in the leaderboard.
 	position: i32,
 	/// Member status.
-	status: TODO__NOT A SINGLE TYPE,
+	status: #[serde(flatten)]
+	AccountStatus
+,
 
 }

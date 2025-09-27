@@ -37,7 +37,9 @@ pub struct CharacterLeaderboardSchema {
 	/// Skin: Character skin code.
 	skin: String,
 	/// Member status.
-	status: TODO__NOT A SINGLE TYPE,
+	status: #[serde(flatten)]
+	AccountStatus
+,
 	/// Total Xp: Total XP of your character.
 	total_xp: i32,
 	/// Weaponcrafting Level: Weaponcrafting level.

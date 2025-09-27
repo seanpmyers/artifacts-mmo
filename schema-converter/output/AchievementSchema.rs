@@ -9,12 +9,16 @@ pub struct AchievementSchema {
 	/// Points: Points of the achievement. Used for the leaderboard.
 	points: i32,
 	/// Rewards.
-	rewards: TODO__NOT A SINGLE TYPE,
+	rewards: #[serde(flatten)]
+	AchievementRewardsSchema
+,
 	/// Target: Target of the achievement.
-	target: TODO__NOT A SINGLE TYPE,
+	target: ,
 	/// Total: Total to do.
 	total: i32,
 	/// Type of achievement.
-	AchievementSchema_type: TODO__NOT A SINGLE TYPE,
+	AchievementSchema_type: #[serde(flatten)]
+	AchievementType
+,
 
 }

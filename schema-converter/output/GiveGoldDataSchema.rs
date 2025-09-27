@@ -1,12 +1,18 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct GiveGoldDataSchema {
 	/// Character details.
-	character: TODO__NOT A SINGLE TYPE,
+	character: #[serde(flatten)]
+	CharacterSchema
+,
 	/// Cooldown details.
-	cooldown: TODO__NOT A SINGLE TYPE,
+	cooldown: #[serde(flatten)]
+	CooldownSchema
+,
 	/// Quantity: Quantity of gold given.
 	quantity: i32,
 	/// Character details of the receiving character.
-	receiver_character: TODO__NOT A SINGLE TYPE,
+	receiver_character: #[serde(flatten)]
+	CharacterSchema
+,
 
 }

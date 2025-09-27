@@ -1,7 +1,7 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct ValidationError {
 	/// Location
-	loc: TODO__Vec<>,
+	loc: Vec<serde::Value>,
 	/// Message
 	msg: String,
 	/// Error Type

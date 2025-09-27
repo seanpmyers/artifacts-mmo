@@ -17,6 +17,7 @@ fn main() -> anyhow::Result<()> {
         panic!("No components");
     };
     for (schema_name, schema) in components.schemas.iter() {
+        let is_reference = matches!(&schema, ObjectOrReference::Ref { .. });
         let object_schema: ObjectSchema = schema.resolve(&spec)?;
         match &object_schema.schema_type {
             Some(typeset) => match &typeset {
@@ -61,8 +62,12 @@ fn main() -> anyhow::Result<()> {
                         continue;
                     }
                     SchemaType::Object => {
-                        let rust_string: String =
-                            schema_object_to_string(schema_name, &object_schema, &spec)?;
+                        let rust_string: String = schema_object_to_string(
+                            schema_name,
+                            &object_schema,
+                            &spec,
+                            is_reference,
+                        )?;
                         rust_to_file(
                             rust_string.as_bytes(),
                             &format!("output/{}.rs", schema_name),
@@ -125,6 +130,7 @@ pub fn schema_object_to_string(
     schema_name: &str,
     schema: &ObjectSchema,
     spec: &Spec,
+    is_reference: bool,
 ) -> anyhow::Result<String> {
     let invalid_field_names: std::collections::HashSet<String> = RESERVED_FIELD_NAMES
         .into_iter()
@@ -136,6 +142,7 @@ pub fn schema_object_to_string(
     result.push_str(&format!("{STRUCT_ANNOTATIONS}\n"));
     result.push_str(&format!("pub struct {} {{\n", schema_name));
     for property in schema.properties.iter() {
+        let is_reference: bool = matches!(property.1, ObjectOrReference::Ref { .. });
         let mut property_name: String = property.0.clone();
         let property_schema: ObjectSchema = property.1.resolve(&spec)?;
 
@@ -152,13 +159,52 @@ pub fn schema_object_to_string(
                         },
                         None => "String",
                     },
-                    SchemaType::Array => "TODO__Vec<>",
-                    SchemaType::Object => "TODO__OBJECT",
+                    SchemaType::Array => match property_schema.items {
+                        Some(items) => {
+                            let schema: &oas3::spec::Schema = items.as_ref();
+                            let t = match schema {
+                                oas3::spec::Schema::Boolean(_boolean_schema) => "bool",
+                                oas3::spec::Schema::Object(object_or_reference) => {
+                                    let t_object = object_or_reference.resolve(&spec)?;
+                                    &match t_object.title {
+                                        Some(title) => title,
+                                        None => "serde::Value".to_string(),
+                                    }
+                                }
+                            };
+                            &format!("Vec<{}>", t)
+                        }
+                        _ => "Vec<serde::Value>",
+                    },
+                    SchemaType::Object => match is_reference {
+                        true => &property
+                            .1
+                            .resolve(&spec)?
+                            .title
+                            .map_or("TODO_MISSING_TITLE".to_string(), |x| x),
+                        false => "TODO_OBJECT_NOT_REFERENCE",
+                    },
                     SchemaType::Null => "TODO__NULL",
                 },
                 SchemaTypeSet::Multiple(_items) => "TODO__MULTIPLE ",
             },
-            None => {
+            None => &{
+                let mut terrible_disease = String::new();
+                if !property_schema.all_of.is_empty() {
+                    for all_of_schema in property_schema.all_of.iter() {
+                        let is_ref: bool = matches!(all_of_schema, ObjectOrReference::Ref { .. });
+                        let resolved_schema: ObjectSchema = all_of_schema.resolve(&spec)?;
+                        match is_ref {
+                            true => terrible_disease.push_str(&format!(
+                                "#[serde(flatten)]\n\t{}\n",
+                                resolved_schema
+                                    .title
+                                    .unwrap_or("TODO_MISSING_TITLE_ALL_OF".to_string())
+                            )),
+                            false => terrible_disease.push_str("TODO_NOT_REF_ALL_OF\n"),
+                        }
+                    }
+                }
                 if !property_schema.any_of.is_empty() {
                     let mut is_option: bool = false;
                     let is_actually_just_optional: bool =
@@ -170,32 +216,32 @@ pub fn schema_object_to_string(
                         match &value_schema.schema_type {
                             Some(value_type_set) => match value_type_set {
                                 SchemaTypeSet::Single(value_type) => match value_type {
-                                    SchemaType::Boolean => todo!(),
-                                    SchemaType::Integer => todo!(),
-                                    SchemaType::Number => todo!(),
+                                    SchemaType::Boolean => println!("TODO: bool"),
+                                    SchemaType::Integer => println!("TODO: integer"),
+                                    SchemaType::Number => println!("TODO: number"),
                                     SchemaType::String => match value_schema.format {
                                         Some(format) => match format.as_str() {
                                             "date-time" => {
                                                 "chrono::DateTime<chrono::Utc>";
                                             }
-                                            _ => todo!(),
+                                            _ => println!("TODO: string with no format"),
                                         },
                                         None => {
                                             "String";
                                         }
                                     },
-                                    SchemaType::Array => todo!(),
-                                    SchemaType::Object => todo!(),
+                                    SchemaType::Array => println!("TODO: array"),
+                                    SchemaType::Object => println!("TODO: object"),
                                     SchemaType::Null => is_option = true,
                                 },
-                                SchemaTypeSet::Multiple(items) => todo!(),
+                                SchemaTypeSet::Multiple(items) => println!("TODO: MULTIPLE"),
                             },
-                            None => todo!(),
+                            None => println!("TOOD: None for value type set"),
                         }
                     }
                 }
-                "TODO__NOT A SINGLE TYPE"
-            }
+                terrible_disease
+            },
         };
 
         let mut field_comment: String = String::from("\t///");

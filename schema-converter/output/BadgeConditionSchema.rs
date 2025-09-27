@@ -3,6 +3,6 @@ pub struct BadgeConditionSchema {
 	/// Code: Code of the condition.
 	code: String,
 	/// Quantity: Quantity of the condition (if any).
-	quantity: TODO__NOT A SINGLE TYPE,
+	quantity: ,
 
 }
