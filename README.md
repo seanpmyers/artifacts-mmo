@@ -3,13 +3,11 @@
 - [https://artifactsmmo.com/](https://artifactsmmo.com/)
 - [https://docs.artifactsmmo.com/](https://docs.artifactsmmo.com/)
 
-```bash
-cargo run > "logs/$(date +'%Y-%m-%d_%H-%M-%S').txt"
-```
+My game client for Artifacts MMO.
 
-```bash
-dx serve --hot-reload true --platform desktop
-```
+Still a work in progress.
+
+
+## Assets
 
 Font: `Upheaval TT (BRK)`
-Audio: [Material Design](https://m2.material.io/design/sound/applying-sound-to-ui.html#system-sounds)

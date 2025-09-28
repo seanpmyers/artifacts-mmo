@@ -247,7 +247,7 @@ pub fn schema_object_to_string(
                                     let t_object = object_or_reference.resolve(&spec)?;
                                     &match t_object.title {
                                         Some(title) => title,
-                                        None => "serde::Value".to_string(),
+                                        None => "serde_json::Value".to_string(),
                                     }
                                 }
                             };
