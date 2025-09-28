@@ -112,20 +112,35 @@ pub fn json_to_file(file_path_string: &str, data: serde_json::Value) -> anyhow::
 
 pub fn to_camel_case(text: &str) -> String {
     let mut result = String::with_capacity(text.len());
-    let mut upper_count: usize = 0;
-    for (i, b) in text.chars().rev().enumerate() {
+    let mut buffer = String::new();
+    for (_, b) in text.chars().rev().enumerate() {
         match b.is_ascii_uppercase() {
             true => {
-                result.push(b.to_ascii_lowercase());
-                upper_count += 1;
+                buffer.push(b.to_ascii_lowercase());
             }
             false => {
-                if upper_count > 0 {
+                if buffer.len() > 0 {
+                    result.push_str(&buffer);
                     result.push('_');
+                    buffer.clear();
                 }
-                upper_count = 0;
                 result.push(b);
             }
+        }
+    }
+
+    if !buffer.is_empty() {
+        if buffer.len() > 1 {
+            if buffer.ends_with("cpn") {
+                let x = buffer.split_off(1);
+                result.push_str(&buffer);
+                result.push('_');
+                result.push_str(&x);
+            } else {
+                result.push_str(&buffer);
+            }
+        } else {
+            result.push_str(&buffer);
         }
     }
 
