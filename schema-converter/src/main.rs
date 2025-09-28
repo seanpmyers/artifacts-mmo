@@ -16,6 +16,7 @@ fn main() -> anyhow::Result<()> {
     let Some(components) = &spec.components else {
         panic!("No components");
     };
+    let mut schema_file_modules: Vec<String> = vec![];
     for (schema_name, schema) in components.schemas.iter() {
         let is_reference = matches!(&schema, ObjectOrReference::Ref { .. });
         let object_schema: ObjectSchema = schema.resolve(&spec)?;
@@ -50,10 +51,12 @@ fn main() -> anyhow::Result<()> {
                                     &object_schema,
                                     &spec,
                                 )?;
+                                let camel_case_schema_name: String = to_camel_case(schema_name);
                                 rust_to_file(
                                     rust_string.as_bytes(),
-                                    &format!("output/{}.rs", to_camel_case(schema_name)),
+                                    &format!("output/{}.rs", camel_case_schema_name),
                                 )?;
+                                schema_file_modules.push(camel_case_schema_name);
                             }
                         }
                     }
@@ -68,10 +71,12 @@ fn main() -> anyhow::Result<()> {
                             &spec,
                             is_reference,
                         )?;
+                        let camel_case_schema_name: String = to_camel_case(schema_name);
                         rust_to_file(
                             rust_string.as_bytes(),
-                            &format!("output/{}.rs", to_camel_case(schema_name)),
+                            &format!("output/{}.rs", camel_case_schema_name),
                         )?;
+                        schema_file_modules.push(camel_case_schema_name);
                     }
                     SchemaType::Null => {
                         json_to_file("output/test.json", serde_json::to_value(object_schema)?)?;
@@ -90,6 +95,11 @@ fn main() -> anyhow::Result<()> {
         }
         // println!("{}, {:?}", schema_name, object_schema);
     }
+
+    rust_to_file(
+        create_modules(&schema_file_modules).as_bytes(),
+        "output/mod.rs",
+    )?;
 
     println!("schema count: {}", components.schemas.len());
 
@@ -145,6 +155,16 @@ pub fn to_camel_case(text: &str) -> String {
     }
 
     result.chars().rev().collect()
+}
+
+pub fn create_modules(module_names: &Vec<String>) -> String {
+    let mut result: String = String::new();
+
+    for module in module_names.iter() {
+        result.push_str(&format!("pub mod {};\n", module));
+    }
+
+    result
 }
 
 pub fn rust_to_file(bytes: &[u8], file_path_string: &str) -> anyhow::Result<()> {
