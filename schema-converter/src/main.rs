@@ -175,7 +175,7 @@ pub fn create_modules(module_names: &Vec<String>) -> String {
     let mut result: String = String::new();
 
     for module in module_names.iter() {
-        result.push_str(&format!("pub mod {};\n", module));
+        result.push_str(&format!("pub mod {};\n", remove_invalid_chars(module)));
     }
 
     result
