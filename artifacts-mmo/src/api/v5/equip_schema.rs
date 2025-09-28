@@ -6,6 +6,6 @@ pub struct EquipSchema {
 	quantity: i32,
 	/// Item slot.
 	#[serde(flatten)]
-	slot: ItemSlot,
+	slot: super::item_slot::ItemSlot,
 
 }

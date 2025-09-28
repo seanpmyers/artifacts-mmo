@@ -2,12 +2,12 @@
 pub struct CharacterFightDataSchema {
 	/// Player details.
 	#[serde(flatten)]
-	character: CharacterSchema,
+	character: super::character_schema::CharacterSchema,
 	/// Cooldown details.
 	#[serde(flatten)]
-	cooldown: CooldownSchema,
+	cooldown: super::cooldown_schema::CooldownSchema,
 	/// Fight details.
 	#[serde(flatten)]
-	fight: FightSchema,
+	fight: super::fight_schema::FightSchema,
 
 }

@@ -16,6 +16,6 @@ pub struct LogSchema {
 	description: String,
 	/// Type of action.
 	#[serde(flatten)]
-	LogSchema_type: LogType,
+	LogSchema_type: super::log_type::LogType,
 
 }

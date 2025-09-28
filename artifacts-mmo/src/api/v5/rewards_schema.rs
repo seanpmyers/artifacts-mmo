@@ -3,6 +3,6 @@ pub struct RewardsSchema {
 	/// Gold: Gold rewards.
 	gold: i32,
 	/// Items: Items rewards.
-	items: Vec<SimpleItemSchema>,
+	items: Vec<super::simple_item_schema::SimpleItemSchema>,
 
 }

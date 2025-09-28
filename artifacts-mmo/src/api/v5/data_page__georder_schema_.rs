@@ -1,7 +1,7 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct DataPage_GEOrderSchema_ {
 	/// Data
-	data: Vec<GEOrderSchema>,
+	data: Vec<super::georder_schema::GEOrderSchema>,
 	/// Page
 	page: Option<f64>,
 	/// Pages

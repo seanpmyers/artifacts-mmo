@@ -3,13 +3,13 @@ pub struct ResourceSchema {
 	/// Code: The code of the resource. This is the resource's unique identifier (ID).
 	code: String,
 	/// Drops: The drops of this resource.
-	drops: Vec<DropRateSchema>,
+	drops: Vec<super::drop_rate_schema::DropRateSchema>,
 	/// Level: The skill level required to gather this resource.
 	level: i32,
 	/// Name: The name of the resource
 	name: String,
 	/// Skill code: The skill required to gather this resource.
 	#[serde(flatten)]
-	skill: GatheringSkill,
+	skill: super::gathering_skill::GatheringSkill,
 
 }

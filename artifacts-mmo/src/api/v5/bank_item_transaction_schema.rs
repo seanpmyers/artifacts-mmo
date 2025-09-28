@@ -1,14 +1,14 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct BankItemTransactionSchema {
 	/// Bank: Items in your banks.
-	bank: Vec<SimpleItemSchema>,
+	bank: Vec<super::simple_item_schema::SimpleItemSchema>,
 	/// Player details.
 	#[serde(flatten)]
-	character: CharacterSchema,
+	character: super::character_schema::CharacterSchema,
 	/// Cooldown details.
 	#[serde(flatten)]
-	cooldown: CooldownSchema,
+	cooldown: super::cooldown_schema::CooldownSchema,
 	/// Items: Items details.
-	items: Vec<SimpleItemSchema>,
+	items: Vec<super::simple_item_schema::SimpleItemSchema>,
 
 }

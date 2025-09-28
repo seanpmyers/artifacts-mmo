@@ -1,7 +1,7 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct DataPage_ItemSchema_ {
 	/// Data
-	data: Vec<ItemSchema>,
+	data: Vec<super::item_schema::ItemSchema>,
 	/// Page
 	page: Option<f64>,
 	/// Pages

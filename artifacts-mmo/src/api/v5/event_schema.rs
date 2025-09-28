@@ -4,11 +4,11 @@ pub struct EventSchema {
 	code: String,
 	/// Content of the event.
 	#[serde(flatten)]
-	content: EventContentSchema,
+	content: super::event_content_schema::EventContentSchema,
 	/// Duration: Duration in minutes.
 	duration: i32,
 	/// Maps: Map list of the event.
-	maps: Vec<EventMapSchema>,
+	maps: Vec<super::event_map_schema::EventMapSchema>,
 	/// Name: Name of the event.
 	name: String,
 	/// Rate: Rate spawn of the event. (1/rate every minute)

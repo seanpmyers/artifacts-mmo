@@ -1,7 +1,7 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct DataPage_MapSchema_ {
 	/// Data
-	data: Vec<MapSchema>,
+	data: Vec<super::map_schema::MapSchema>,
 	/// Page
 	page: Option<f64>,
 	/// Pages

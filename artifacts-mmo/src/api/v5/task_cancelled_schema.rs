@@ -2,9 +2,9 @@
 pub struct TaskCancelledSchema {
 	/// Player details.
 	#[serde(flatten)]
-	character: CharacterSchema,
+	character: super::character_schema::CharacterSchema,
 	/// Cooldown details.
 	#[serde(flatten)]
-	cooldown: CooldownSchema,
+	cooldown: super::cooldown_schema::CooldownSchema,
 
 }

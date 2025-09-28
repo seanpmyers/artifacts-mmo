@@ -1,7 +1,7 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct DataPage_EventSchema_ {
 	/// Data
-	data: Vec<EventSchema>,
+	data: Vec<super::event_schema::EventSchema>,
 	/// Page
 	page: Option<f64>,
 	/// Pages

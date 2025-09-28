@@ -8,9 +8,9 @@ pub struct EffectSchema {
 	name: String,
 	/// Subtype of the effect.
 	#[serde(flatten)]
-	subtype: EffectSubtype,
+	subtype: super::effect_subtype::EffectSubtype,
 	/// Type of the effect.
 	#[serde(flatten)]
-	EffectSchema_type: EffectType,
+	EffectSchema_type: super::effect_type::EffectType,
 
 }

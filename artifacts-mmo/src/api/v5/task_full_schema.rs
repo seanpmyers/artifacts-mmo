@@ -10,11 +10,11 @@ pub struct TaskFullSchema {
 	min_quantity: i32,
 	/// Rewards.
 	#[serde(flatten)]
-	rewards: RewardsSchema,
+	rewards: super::rewards_schema::RewardsSchema,
 	/// Skill: Skill required to complete the task.
 	skill: Option<String>,
 	/// Type: The type of task.
 	#[serde(flatten)]
-	TaskFullSchema_type: TaskType,
+	TaskFullSchema_type: super::task_type::TaskType,
 
 }

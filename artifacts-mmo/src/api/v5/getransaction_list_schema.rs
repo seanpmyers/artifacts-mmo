@@ -2,12 +2,12 @@
 pub struct GETransactionListSchema {
 	/// Character details.
 	#[serde(flatten)]
-	character: CharacterSchema,
+	character: super::character_schema::CharacterSchema,
 	/// Cooldown details.
 	#[serde(flatten)]
-	cooldown: CooldownSchema,
+	cooldown: super::cooldown_schema::CooldownSchema,
 	/// Transaction details.
 	#[serde(flatten)]
-	order: GETransactionSchema,
+	order: super::getransaction_schema::GETransactionSchema,
 
 }

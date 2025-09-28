@@ -1,7 +1,7 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct DataPage_AccountLeaderboardSchema_ {
 	/// Data
-	data: Vec<AccountLeaderboardSchema>,
+	data: Vec<super::account_leaderboard_schema::AccountLeaderboardSchema>,
 	/// Page
 	page: Option<f64>,
 	/// Pages

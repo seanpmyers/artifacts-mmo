@@ -1,7 +1,7 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct DataPage_NPCItem_ {
 	/// Data
-	data: Vec<NPCItem>,
+	data: Vec<super::npc_item::NPCItem>,
 	/// Page
 	page: Option<f64>,
 	/// Pages

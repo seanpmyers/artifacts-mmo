@@ -1,7 +1,7 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct MapSchema {
 	/// Content of the map.
-	content: MapContentSchema,
+	content: super::map_content_schema::MapContentSchema,
 	/// Name: Name of the map.
 	name: String,
 	/// Skin: Skin of the map.

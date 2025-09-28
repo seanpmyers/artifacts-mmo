@@ -38,7 +38,7 @@ pub struct CharacterLeaderboardSchema {
 	skin: String,
 	/// Member status.
 	#[serde(flatten)]
-	status: AccountStatus,
+	status: super::account_status::AccountStatus,
 	/// Total Xp: Total XP of your character.
 	total_xp: i32,
 	/// Weaponcrafting Level: Weaponcrafting level.

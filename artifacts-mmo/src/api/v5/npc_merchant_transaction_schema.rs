@@ -2,12 +2,12 @@
 pub struct NpcMerchantTransactionSchema {
 	/// Character details.
 	#[serde(flatten)]
-	character: CharacterSchema,
+	character: super::character_schema::CharacterSchema,
 	/// Cooldown details.
 	#[serde(flatten)]
-	cooldown: CooldownSchema,
+	cooldown: super::cooldown_schema::CooldownSchema,
 	/// Transaction details.
 	#[serde(flatten)]
-	transaction: NpcItemTransactionSchema,
+	transaction: super::npc_item_transaction_schema::NpcItemTransactionSchema,
 
 }

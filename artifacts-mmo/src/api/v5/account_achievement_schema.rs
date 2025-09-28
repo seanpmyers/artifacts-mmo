@@ -14,13 +14,13 @@ pub struct AccountAchievementSchema {
 	points: i32,
 	/// Rewards.
 	#[serde(flatten)]
-	rewards: AchievementRewardsSchema,
+	rewards: super::achievement_rewards_schema::AchievementRewardsSchema,
 	/// Target: Target of the achievement.
 	target: Option<String>,
 	/// Total: Total to do.
 	total: i32,
 	/// Type of achievement.
 	#[serde(flatten)]
-	AccountAchievementSchema_type: AchievementType,
+	AccountAchievementSchema_type: super::achievement_type::AchievementType,
 
 }

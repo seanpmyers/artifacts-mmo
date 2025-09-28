@@ -1,7 +1,7 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct DataPage_BadgeSchema_ {
 	/// Data
-	data: Vec<BadgeSchema>,
+	data: Vec<super::badge_schema::BadgeSchema>,
 	/// Page
 	page: Option<f64>,
 	/// Pages

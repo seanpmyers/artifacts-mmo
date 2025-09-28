@@ -3,7 +3,7 @@ pub struct MyAccountDetails {
 	/// Achievements Points: Achievement points.
 	achievements_points: i32,
 	/// Badges: Account badges.
-	badges: Vec<serde::Value>,
+	badges: Vec<serde_json::Value>,
 	/// Ban Reason: Ban reason.
 	ban_reason: String,
 	/// Banned: Banned.
@@ -17,10 +17,10 @@ pub struct MyAccountDetails {
 	/// Member Expiration: Member expiration date.
 	member_expiration: Option<String>,
 	/// Skins: Skins owned.
-	skins: Vec<serde::Value>,
+	skins: Vec<serde_json::Value>,
 	/// Account status.
 	#[serde(flatten)]
-	status: AccountStatus,
+	status: super::account_status::AccountStatus,
 	/// Username: Username.
 	username: String,
 

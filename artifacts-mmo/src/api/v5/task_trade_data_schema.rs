@@ -2,12 +2,12 @@
 pub struct TaskTradeDataSchema {
 	/// Player details.
 	#[serde(flatten)]
-	character: CharacterSchema,
+	character: super::character_schema::CharacterSchema,
 	/// Cooldown details.
 	#[serde(flatten)]
-	cooldown: CooldownSchema,
+	cooldown: super::cooldown_schema::CooldownSchema,
 	/// Reward details.
 	#[serde(flatten)]
-	trade: TaskTradeSchema,
+	trade: super::task_trade_schema::TaskTradeSchema,
 
 }

@@ -10,11 +10,11 @@ pub struct ActiveEventSchema {
 	expiration: chrono::DateTime<chrono::Utc>,
 	/// Map of the event.
 	#[serde(flatten)]
-	map: MapSchema,
+	map: super::map_schema::MapSchema,
 	/// Name: Name of the event.
 	name: String,
 	/// Previous map skin.
 	#[serde(flatten)]
-	previous_map: MapSchema,
+	previous_map: super::map_schema::MapSchema,
 
 }

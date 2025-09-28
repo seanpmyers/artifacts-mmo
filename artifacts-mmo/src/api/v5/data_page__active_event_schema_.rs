@@ -1,7 +1,7 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct DataPage_ActiveEventSchema_ {
 	/// Data
-	data: Vec<ActiveEventSchema>,
+	data: Vec<super::active_event_schema::ActiveEventSchema>,
 	/// Page
 	page: Option<f64>,
 	/// Pages

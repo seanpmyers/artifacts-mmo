@@ -2,12 +2,12 @@
 pub struct TaskDataSchema {
 	/// Player details.
 	#[serde(flatten)]
-	character: CharacterSchema,
+	character: super::character_schema::CharacterSchema,
 	/// Cooldown details.
 	#[serde(flatten)]
-	cooldown: CooldownSchema,
+	cooldown: super::cooldown_schema::CooldownSchema,
 	/// Task details.
 	#[serde(flatten)]
-	task: TaskSchema,
+	task: super::task_schema::TaskSchema,
 
 }

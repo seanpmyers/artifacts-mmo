@@ -10,6 +10,6 @@ pub struct AccountLeaderboardSchema {
 	position: i32,
 	/// Member status.
 	#[serde(flatten)]
-	status: AccountStatus,
+	status: super::account_status::AccountStatus,
 
 }

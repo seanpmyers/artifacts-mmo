@@ -4,7 +4,7 @@ pub struct ConditionSchema {
 	code: String,
 	/// Condition operator.
 	#[serde(flatten)]
-	operator: ConditionOperator,
+	operator: super::condition_operator::ConditionOperator,
 	/// Value: Condition value.
 	value: i32,
 

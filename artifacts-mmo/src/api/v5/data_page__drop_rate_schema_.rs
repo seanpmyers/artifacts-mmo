@@ -1,7 +1,7 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct DataPage_DropRateSchema_ {
 	/// Data
-	data: Vec<DropRateSchema>,
+	data: Vec<super::drop_rate_schema::DropRateSchema>,
 	/// Page
 	page: Option<f64>,
 	/// Pages

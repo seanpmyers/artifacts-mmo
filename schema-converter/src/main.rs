@@ -246,7 +246,9 @@ pub fn schema_object_to_string(
                                 oas3::spec::Schema::Object(object_or_reference) => {
                                     let t_object = object_or_reference.resolve(&spec)?;
                                     &match t_object.title {
-                                        Some(title) => title,
+                                        Some(title) => {
+                                            format!("super::{}::{}", to_camel_case(&title), title)
+                                        }
                                         None => "serde_json::Value".to_string(),
                                     }
                                 }
@@ -256,11 +258,14 @@ pub fn schema_object_to_string(
                         _ => "Vec<serde::Value>",
                     },
                     SchemaType::Object => match is_reference {
-                        true => &property
-                            .1
-                            .resolve(&spec)?
-                            .title
-                            .map_or("TODO_MISSING_TITLE".to_string(), |x| x),
+                        true => {
+                            let title = property
+                                .1
+                                .resolve(&spec)?
+                                .title
+                                .map_or("TODO_MISSING_TITLE".to_string(), |x| x);
+                            &format!("super::{}::{}", to_camel_case(&title), title)
+                        }
                         false => "TODO_OBJECT_NOT_REFERENCE",
                     },
                     SchemaType::Null => "TODO__NULL",
@@ -276,11 +281,13 @@ pub fn schema_object_to_string(
                         match is_ref {
                             true => {
                                 property_annotations.push("#[serde(flatten)]".to_string());
+                                let title = resolved_schema
+                                    .title
+                                    .unwrap_or("TODO_MISSING_TITLE_ALL_OF".to_string());
                                 none_type_result.push_str(&format!(
-                                    "{}",
-                                    resolved_schema
-                                        .title
-                                        .unwrap_or("TODO_MISSING_TITLE_ALL_OF".to_string())
+                                    "super::{}::{}",
+                                    to_camel_case(&title),
+                                    title
                                 ))
                             }
                             false => none_type_result.push_str("TODO_NOT_REF_ALL_OF\n"),
@@ -409,7 +416,10 @@ pub fn any_of_to_type(any_of: &Vec<ObjectOrReference<ObjectSchema>>, spec: &Spec
                     SchemaType::Number => format!("Option<i64>"),
                     SchemaType::String => format!("Option<String>"),
                     SchemaType::Array => format!("Opttion<Vec<TODO>>"),
-                    SchemaType::Object => format!("{}", field_type.title.unwrap()),
+                    SchemaType::Object => {
+                        let title = field_type.title.unwrap();
+                        format!("super::{}::{}", to_camel_case(&title), title)
+                    }
                     SchemaType::Null => panic!("Null should be filtered out"),
                 },
                 SchemaTypeSet::Multiple(_items) => todo!(),

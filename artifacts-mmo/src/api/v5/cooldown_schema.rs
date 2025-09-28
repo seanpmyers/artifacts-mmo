@@ -4,7 +4,7 @@ pub struct CooldownSchema {
 	expiration: chrono::DateTime<chrono::Utc>,
 	/// The reason of the cooldown.
 	#[serde(flatten)]
-	reason: ActionType,
+	reason: super::action_type::ActionType,
 	/// Remaining Seconds: The remaining seconds of the cooldown.
 	remaining_seconds: i32,
 	/// Started At: The start of the cooldown.

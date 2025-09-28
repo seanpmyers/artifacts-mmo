@@ -2,14 +2,14 @@
 pub struct GiveGoldDataSchema {
 	/// Character details.
 	#[serde(flatten)]
-	character: CharacterSchema,
+	character: super::character_schema::CharacterSchema,
 	/// Cooldown details.
 	#[serde(flatten)]
-	cooldown: CooldownSchema,
+	cooldown: super::cooldown_schema::CooldownSchema,
 	/// Quantity: Quantity of gold given.
 	quantity: i32,
 	/// Character details of the receiving character.
 	#[serde(flatten)]
-	receiver_character: CharacterSchema,
+	receiver_character: super::character_schema::CharacterSchema,
 
 }

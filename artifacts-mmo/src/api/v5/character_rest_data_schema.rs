@@ -2,10 +2,10 @@
 pub struct CharacterRestDataSchema {
 	/// Character details.
 	#[serde(flatten)]
-	character: CharacterSchema,
+	character: super::character_schema::CharacterSchema,
 	/// Cooldown details
 	#[serde(flatten)]
-	cooldown: CooldownSchema,
+	cooldown: super::cooldown_schema::CooldownSchema,
 	/// Hp Restored: The amount of HP restored.
 	hp_restored: i32,
 

@@ -3,13 +3,13 @@ pub struct ItemSchema {
 	/// Code: Item code. This is the item's unique identifier (ID).
 	code: String,
 	/// Conditions: Item conditions. If applicable. Conditions for using or equipping the item.
-	conditions: Vec<ConditionSchema>,
+	conditions: Vec<super::condition_schema::ConditionSchema>,
 	/// Craft information. If applicable.
-	craft: CraftSchema,
+	craft: super::craft_schema::CraftSchema,
 	/// Description: Item description.
 	description: String,
 	/// Effects: List of object effects. For equipment, it will include item stats.
-	effects: Vec<SimpleEffectSchema>,
+	effects: Vec<super::simple_effect_schema::SimpleEffectSchema>,
 	/// Level: Item level.
 	level: i32,
 	/// Name: Item name.

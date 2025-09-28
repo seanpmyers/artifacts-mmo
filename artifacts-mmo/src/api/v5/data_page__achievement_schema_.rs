@@ -1,7 +1,7 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct DataPage_AchievementSchema_ {
 	/// Data
-	data: Vec<AchievementSchema>,
+	data: Vec<super::achievement_schema::AchievementSchema>,
 	/// Page
 	page: Option<f64>,
 	/// Pages

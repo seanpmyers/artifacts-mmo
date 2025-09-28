@@ -2,12 +2,12 @@
 pub struct GEOrderTransactionSchema {
 	/// Character details.
 	#[serde(flatten)]
-	character: CharacterSchema,
+	character: super::character_schema::CharacterSchema,
 	/// Cooldown details.
 	#[serde(flatten)]
-	cooldown: CooldownSchema,
+	cooldown: super::cooldown_schema::CooldownSchema,
 	/// Order details.
 	#[serde(flatten)]
-	order: GEOrderCreatedSchema,
+	order: super::georder_created_schema::GEOrderCreatedSchema,
 
 }

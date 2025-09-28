@@ -1,6 +1,6 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct MyAccountDetailsSchema {
 	/// MyAccountDetails
-	data: MyAccountDetails,
+	data: super::my_account_details::MyAccountDetails,
 
 }
