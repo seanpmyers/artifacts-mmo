@@ -25,3 +25,4 @@ Cargo.lock
 output.txt
 logs/*
 .DS_Store
+schema-converter/output/
