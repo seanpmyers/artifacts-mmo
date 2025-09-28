@@ -15,6 +15,7 @@ pub struct TaskFullSchema {
 	skill: Option<String>,
 	/// Type: The type of task.
 	#[serde(flatten)]
-	TaskFullSchema_type: super::task_type::TaskType,
+	#[serde(rename = "type")]
+	r#type: super::task_type::TaskType,
 
 }

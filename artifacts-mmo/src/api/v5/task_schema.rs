@@ -9,6 +9,7 @@ pub struct TaskSchema {
 	total: i32,
 	/// Type: The type of task.
 	#[serde(flatten)]
-	TaskSchema_type: super::task_type::TaskType,
+	#[serde(rename = "type")]
+	r#type: super::task_type::TaskType,
 
 }

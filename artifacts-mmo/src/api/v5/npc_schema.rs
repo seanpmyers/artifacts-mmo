@@ -8,6 +8,7 @@ pub struct NPCSchema {
 	name: String,
 	/// Type of the NPC.
 	#[serde(flatten)]
-	NPCSchema_type: super::npc_type::NPCType,
+	#[serde(rename = "type")]
+	r#type: super::npc_type::NPCType,
 
 }

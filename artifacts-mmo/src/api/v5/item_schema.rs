@@ -19,6 +19,7 @@ pub struct ItemSchema {
 	/// Tradeable: Item tradeable status. A non-tradeable item cannot be exchanged or sold.
 	tradeable: bool,
 	/// Type: Item type.
-	ItemSchema_type: String,
+	#[serde(rename = "type")]
+	r#type: String,
 
 }

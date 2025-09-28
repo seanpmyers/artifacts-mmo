@@ -11,6 +11,7 @@ pub struct EffectSchema {
 	subtype: super::effect_subtype::EffectSubtype,
 	/// Type of the effect.
 	#[serde(flatten)]
-	EffectSchema_type: super::effect_type::EffectType,
+	#[serde(rename = "type")]
+	r#type: super::effect_type::EffectType,
 
 }

@@ -4,6 +4,7 @@ pub struct EventContentSchema {
 	code: String,
 	/// Type of the event.
 	#[serde(flatten)]
-	EventContentSchema_type: super::map_content_type::MapContentType,
+	#[serde(rename = "type")]
+	r#type: super::map_content_type::MapContentType,
 
 }

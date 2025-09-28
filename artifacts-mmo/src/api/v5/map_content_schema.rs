@@ -4,6 +4,7 @@ pub struct MapContentSchema {
 	code: String,
 	/// Type of the content.
 	#[serde(flatten)]
-	MapContentSchema_type: super::map_content_type::MapContentType,
+	#[serde(rename = "type")]
+	r#type: super::map_content_type::MapContentType,
 
 }

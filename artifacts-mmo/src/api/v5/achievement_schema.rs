@@ -17,6 +17,7 @@ pub struct AchievementSchema {
 	total: i32,
 	/// Type of achievement.
 	#[serde(flatten)]
-	AchievementSchema_type: super::achievement_type::AchievementType,
+	#[serde(rename = "type")]
+	r#type: super::achievement_type::AchievementType,
 
 }

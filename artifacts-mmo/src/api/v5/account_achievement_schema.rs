@@ -21,6 +21,7 @@ pub struct AccountAchievementSchema {
 	total: i32,
 	/// Type of achievement.
 	#[serde(flatten)]
-	AccountAchievementSchema_type: super::achievement_type::AchievementType,
+	#[serde(rename = "type")]
+	r#type: super::achievement_type::AchievementType,
 
 }

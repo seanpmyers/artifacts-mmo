@@ -5,6 +5,7 @@ pub struct ValidationError {
 	/// Message
 	msg: String,
 	/// Error Type
-	ValidationError_type: String,
+	#[serde(rename = "type")]
+	r#type: String,
 
 }

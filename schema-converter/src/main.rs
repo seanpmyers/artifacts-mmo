@@ -330,7 +330,8 @@ pub fn schema_object_to_string(
         }
 
         if invalid_field_names.contains(&property_name) {
-            property_name = format!("{}_{}", schema_name, property_name);
+            result.push_str(&format!("\t#[serde(rename = \"{}\")]\n", property_name));
+            property_name = format!("r#{}", property_name);
         };
         result.push_str(&format!("\t{}: {},\n", property_name, property_type));
     }
