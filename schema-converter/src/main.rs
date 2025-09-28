@@ -120,10 +120,24 @@ pub fn json_to_file(file_path_string: &str, data: serde_json::Value) -> anyhow::
     Ok(())
 }
 
+pub fn remove_invalid_chars(input: &str) -> String {
+    input
+        .chars()
+        .map(|x| match x.is_ascii_alphanumeric() {
+            true => x,
+            false => '_',
+        })
+        .collect()
+}
+
 pub fn to_camel_case(text: &str) -> String {
     let mut result = String::with_capacity(text.len());
     let mut buffer = String::new();
     for (_, b) in text.chars().rev().enumerate() {
+        let mut b = b;
+        if !b.is_alphanumeric() {
+            b = '_';
+        }
         match b.is_ascii_uppercase() {
             true => {
                 buffer.push(b.to_ascii_lowercase());
@@ -197,7 +211,10 @@ pub fn schema_object_to_string(
     let mut result: String = String::new();
 
     result.push_str(&format!("{STRUCT_ANNOTATIONS}\n"));
-    result.push_str(&format!("pub struct {} {{\n", schema_name));
+    result.push_str(&format!(
+        "pub struct {} {{\n",
+        remove_invalid_chars(schema_name)
+    ));
     for property in schema.properties.iter() {
         let is_reference: bool = matches!(property.1, ObjectOrReference::Ref { .. });
         let mut property_name: String = property.0.clone();
@@ -322,7 +339,10 @@ pub fn schema_string_enum_to_rust_string(
     let mut result: String = String::new();
 
     result.push_str(&format!("{}\n", ENUM_ANNOTATIONS));
-    result.push_str(&format!("pub enum {} {{\n", schema_name));
+    result.push_str(&format!(
+        "pub enum {} {{\n",
+        remove_invalid_chars(schema_name)
+    ));
     result.push_str(&format!("\t#[default]\n"));
     for x in schema.enum_values.iter() {
         let mut enum_variation_name = x.as_str().unwrap_or_default();
