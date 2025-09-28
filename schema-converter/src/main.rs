@@ -52,7 +52,7 @@ fn main() -> anyhow::Result<()> {
                                 )?;
                                 rust_to_file(
                                     rust_string.as_bytes(),
-                                    &format!("output/{}.rs", schema_name),
+                                    &format!("output/{}.rs", to_camel_case(schema_name)),
                                 )?;
                             }
                         }
@@ -70,7 +70,7 @@ fn main() -> anyhow::Result<()> {
                         )?;
                         rust_to_file(
                             rust_string.as_bytes(),
-                            &format!("output/{}.rs", schema_name),
+                            &format!("output/{}.rs", to_camel_case(schema_name)),
                         )?;
                     }
                     SchemaType::Null => {
@@ -110,6 +110,23 @@ pub fn json_to_file(file_path_string: &str, data: serde_json::Value) -> anyhow::
     Ok(())
 }
 
+pub fn to_camel_case(text: &str) -> String {
+    let mut result = String::with_capacity(text.len());
+    for (i, b) in text.chars().enumerate() {
+        match b.is_ascii_uppercase() {
+            true => {
+                if !i.eq(&0) {
+                    result.push('_');
+                }
+                result.push(b.to_ascii_lowercase());
+            }
+            false => result.push(b),
+        }
+    }
+
+    result
+}
+
 pub fn rust_to_file(bytes: &[u8], file_path_string: &str) -> anyhow::Result<()> {
     let file_path: std::path::PathBuf = std::path::Path::new(&file_path_string).to_path_buf();
 
@@ -124,7 +141,7 @@ pub fn rust_to_file(bytes: &[u8], file_path_string: &str) -> anyhow::Result<()> 
     Ok(())
 }
 
-const RESERVED_FIELD_NAMES: [&str; 1] = ["type"];
+const RESERVED_FIELD_NAMES: [&str; 2] = ["type", "enum"];
 
 pub fn schema_object_to_string(
     schema_name: &str,
@@ -146,6 +163,8 @@ pub fn schema_object_to_string(
         let mut property_name: String = property.0.clone();
         let property_schema: ObjectSchema = property.1.resolve(&spec)?;
 
+        let mut property_annotations: Vec<String> = vec![];
+        let mut property_comments: String = String::new();
         let property_type: &str = match property_schema.schema_type {
             Some(typeset) => match typeset {
                 SchemaTypeSet::Single(single_type) => match single_type {
@@ -155,7 +174,10 @@ pub fn schema_object_to_string(
                     SchemaType::String => match property_schema.format {
                         Some(format) => match format.as_str() {
                             "date-time" => "chrono::DateTime<chrono::Utc>",
-                            _ => &format!("String__TODO__{}", format),
+                            _ => {
+                                property_comments.push_str(&format!("TODO_format_{}", format));
+                                &format!("String")
+                            }
                         },
                         None => "String",
                     },
@@ -189,58 +211,34 @@ pub fn schema_object_to_string(
                 SchemaTypeSet::Multiple(_items) => "TODO__MULTIPLE ",
             },
             None => &{
-                let mut terrible_disease = String::new();
+                let mut none_type_result = String::new();
                 if !property_schema.all_of.is_empty() {
                     for all_of_schema in property_schema.all_of.iter() {
                         let is_ref: bool = matches!(all_of_schema, ObjectOrReference::Ref { .. });
                         let resolved_schema: ObjectSchema = all_of_schema.resolve(&spec)?;
                         match is_ref {
-                            true => terrible_disease.push_str(&format!(
-                                "#[serde(flatten)]\n\t{}\n",
-                                resolved_schema
-                                    .title
-                                    .unwrap_or("TODO_MISSING_TITLE_ALL_OF".to_string())
-                            )),
-                            false => terrible_disease.push_str("TODO_NOT_REF_ALL_OF\n"),
+                            true => {
+                                property_annotations.push("#[serde(flatten)]".to_string());
+                                none_type_result.push_str(&format!(
+                                    "{}",
+                                    resolved_schema
+                                        .title
+                                        .unwrap_or("TODO_MISSING_TITLE_ALL_OF".to_string())
+                                ))
+                            }
+                            false => none_type_result.push_str("TODO_NOT_REF_ALL_OF\n"),
                         }
                     }
                 }
                 if !property_schema.any_of.is_empty() {
-                    let mut is_option: bool = false;
-                    let is_actually_just_optional: bool =
-                        is_actually_just_optional(&property_schema.any_of, spec);
-                    let possible_types: Vec<&str> =
-                        Vec::with_capacity(property_schema.any_of.len());
-                    for value in property_schema.any_of.iter() {
-                        let value_schema = value.resolve(spec)?;
-                        match &value_schema.schema_type {
-                            Some(value_type_set) => match value_type_set {
-                                SchemaTypeSet::Single(value_type) => match value_type {
-                                    SchemaType::Boolean => println!("TODO: bool"),
-                                    SchemaType::Integer => println!("TODO: integer"),
-                                    SchemaType::Number => println!("TODO: number"),
-                                    SchemaType::String => match value_schema.format {
-                                        Some(format) => match format.as_str() {
-                                            "date-time" => {
-                                                "chrono::DateTime<chrono::Utc>";
-                                            }
-                                            _ => println!("TODO: string with no format"),
-                                        },
-                                        None => {
-                                            "String";
-                                        }
-                                    },
-                                    SchemaType::Array => println!("TODO: array"),
-                                    SchemaType::Object => println!("TODO: object"),
-                                    SchemaType::Null => is_option = true,
-                                },
-                                SchemaTypeSet::Multiple(items) => println!("TODO: MULTIPLE"),
-                            },
-                            None => println!("TOOD: None for value type set"),
-                        }
+                    let any_of_result: AnyOfResult = any_of_to_type(&property_schema.any_of, &spec);
+                    if any_of_result.enum_type.is_some() {
+                        todo!();
                     }
+
+                    none_type_result = any_of_result.field_type;
                 }
-                terrible_disease
+                none_type_result
             },
         };
 
@@ -261,6 +259,10 @@ pub fn schema_object_to_string(
 
         if property_schema.title.is_some() || property_schema.description.is_some() {
             result.push_str(&field_comment);
+        }
+
+        for annotation in property_annotations.into_iter() {
+            result.push_str(&format!("\t{}\n", annotation));
         }
 
         if invalid_field_names.contains(&property_name) {
@@ -292,7 +294,7 @@ pub fn schema_string_enum_to_rust_string(
 
         for part in y.iter_mut() {
             if let Some(first_letter) = part.get_mut(0) {
-                *first_letter -= (b'a' - b'A');
+                *first_letter -= b'a' - b'A';
                 reformatted_enum_name.push_str(from_utf8(part)?);
             }
         }
@@ -308,43 +310,58 @@ pub fn schema_string_enum_to_rust_string(
     Ok(result)
 }
 
-pub fn is_actually_just_optional(
-    any_of: &Vec<ObjectOrReference<ObjectSchema>>,
-    spec: &Spec,
-) -> bool {
-    any_of.iter().any(|item| {
-        item.resolve(spec).is_ok_and(|ok| {
-            ok.schema_type
-                .eq(&Some(SchemaTypeSet::Single(SchemaType::Null)))
-        })
-    })
+pub struct AnyOfResult {
+    pub field_type: String,
+    pub enum_type: Option<String>,
 }
 
-pub fn get_type_from_optional_any_of(
-    any_of: &Vec<ObjectOrReference<ObjectSchema>>,
-    spec: &Spec,
-) -> &'static str {
-    // let any_of = any_of.iter().filter(|item| {
-    //     item.resolve(spec).is_ok_and(|ok| {
-    //         !ok.schema_type
-    //             .eq(&Some(SchemaTypeSet::Single(SchemaType::Null)))
-    //     })
-    // }).map(|item| item.resolve(spec).is_ok_and(|ok| match ok.schema_type {
-    //     Some(type_thing) =>  match type_thing {
-    //         SchemaTypeSet::Single(single_type) => match single_type{
-    //             SchemaType::Boolean => todo!(),
-    //             SchemaType::Integer => todo!(),
-    //             SchemaType::Number => todo!(),
-    //             SchemaType::String => {
-    //                 "TODO"
-    //             },
-    //             SchemaType::Array => todo!(),
-    //             SchemaType::Object => todo!(),
-    //             SchemaType::Null => todo!(),
-    //         },
-    //         SchemaTypeSet::Multiple(items) => todo!(),
-    //     },
-    //     None => panic!("uh oh i messed up"),
-    // })).last().unwrap()
-    ""
+pub fn any_of_to_type(any_of: &Vec<ObjectOrReference<ObjectSchema>>, spec: &Spec) -> AnyOfResult {
+    let mut result: AnyOfResult = AnyOfResult {
+        field_type: String::new(),
+        enum_type: None,
+    };
+
+    if any_of.len().eq(&2)
+        && any_of.iter().any(|x| {
+            x.resolve(&spec).is_ok_and(|obj| {
+                obj.schema_type
+                    .eq(&Some(SchemaTypeSet::Single(SchemaType::Null)))
+            })
+        })
+    {
+        let field_type = any_of
+            .iter()
+            .filter(|x| {
+                x.resolve(&spec).is_ok_and(|y| {
+                    !y.schema_type
+                        .eq(&Some(SchemaTypeSet::Single(SchemaType::Null)))
+                })
+            })
+            .last()
+            .unwrap()
+            .resolve(&spec)
+            .unwrap();
+        let type_str = match field_type.schema_type {
+            Some(typeset) => match typeset {
+                SchemaTypeSet::Single(typeset) => match typeset {
+                    SchemaType::Boolean => format!("Option<bool>"),
+                    SchemaType::Integer => format!("Option<f64>"),
+                    SchemaType::Number => format!("Option<i64>"),
+                    SchemaType::String => format!("Option<String>"),
+                    SchemaType::Array => format!("Opttion<Vec<TODO>>"),
+                    SchemaType::Object => format!("{}", field_type.title.unwrap()),
+                    SchemaType::Null => panic!("Null should be filtered out"),
+                },
+                SchemaTypeSet::Multiple(_items) => todo!(),
+            },
+            None => todo!(),
+        };
+
+        result.field_type.push_str(&type_str);
+        return result;
+    }
+
+    result.field_type.push_str("TODO_ENUM_TYPES");
+
+    result
 }
