@@ -10,6 +10,28 @@ pub const STRUCT_ANNOTATIONS: &'static str =
 pub const ENUM_ANNOTATIONS: &'static str = r#"#[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]"#;
 
+pub struct Request {}
+
+impl Request {
+    pub fn path() -> &'static str {
+        ""
+    }
+
+    pub fn tags() -> [&'static str; 1] {
+        [""]
+    }
+}
+
+pub mod paths {
+    pub fn parse_paths(spec: &oas3::Spec) {
+        let Some(paths) = &spec.paths else {
+            return;
+        };
+
+        for (path, item) in paths.iter() {}
+    }
+}
+
 fn main() -> anyhow::Result<()> {
     let file: &'static str = include_str!("../schema/version/v5/openapi.json");
     let spec: oas3::Spec = oas3::from_json(file).unwrap();
