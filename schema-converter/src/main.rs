@@ -15,7 +15,7 @@ fn main() -> anyhow::Result<()> {
     let spec: oas3::Spec = oas3::from_json(file).unwrap();
 
     parse_components(&spec)?;
-    parse_paths(&spec)?;
+    let _paths: Vec<paths::Path> = parse_paths(&spec)?;
 
     Ok(())
 }

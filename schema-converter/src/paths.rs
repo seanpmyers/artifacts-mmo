@@ -1,8 +1,8 @@
 use std::{collections::BTreeMap, str::FromStr};
 
-use oas3::spec::{ObjectOrReference, Operation, PathItem};
+use oas3::spec::{ObjectOrReference, ObjectSchema, Operation, PathItem};
 
-use crate::log_error;
+use crate::{constants::STRUCT_ANNOTATIONS, log_error};
 
 pub struct Request {}
 
@@ -18,6 +18,11 @@ impl Request {
     pub fn summary() -> &'static str {
         ""
     }
+
+    pub fn http_method()
+    // -> http::Method
+    {
+    }
 }
 
 pub enum HttpMethod {
@@ -30,6 +35,26 @@ pub enum HttpMethod {
     POST,
     PUT,
     TRACE,
+}
+
+impl std::fmt::Display for HttpMethod {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                HttpMethod::CONNECT => "CONNECT",
+                HttpMethod::DELETE => "DELETE",
+                HttpMethod::GET => "GET",
+                HttpMethod::HEAD => "HEAD",
+                HttpMethod::OPTIONS => "OPTIONS",
+                HttpMethod::PATCH => "PATCH",
+                HttpMethod::POST => "POST",
+                HttpMethod::PUT => "PUT",
+                HttpMethod::TRACE => "TRACE",
+            }
+        )
+    }
 }
 
 impl FromStr for HttpMethod {
@@ -66,7 +91,7 @@ pub struct HttpResponse {
 
 #[derive(Default)]
 pub struct HttpRequestBody {
-    pub content: HttpContent,
+    pub content: Vec<HttpContent>,
     pub description: Option<String>,
     pub required: bool,
 }
@@ -103,6 +128,74 @@ impl HttpRequest {
             body: Default::default(),
             tags: Default::default(),
         }
+    }
+
+    pub fn operation_id_to_struct_name(&self) -> String {
+        let mut result: String = String::new();
+
+        for x in self.operation_id.split("_") {
+            if x.is_empty() {
+                continue;
+            }
+            let mut chars = x.chars();
+            let first = chars.next().unwrap().to_ascii_uppercase();
+            result.push(first);
+            result.push_str(chars.as_str());
+        }
+
+        result
+    }
+
+    pub fn description_to_output_function(&self) -> String {
+        format!(
+            "\tpub fn description() -> &'static str {{\n\t\t\"{}\"\n\t}}",
+            self.description
+        )
+    }
+
+    pub fn summary_to_output_function(&self) -> String {
+        format!(
+            "\tpub fn summary() -> &'static str {{\n\t\t\"{}\"\n\t}}",
+            self.summary
+        )
+    }
+
+    pub fn tags_to_output_function(&self) -> String {
+        let mut result: String = format!(
+            "\tpub fn tag() -> [&'static str; {}] {{\n\t\t[\n",
+            self.tags.len()
+        );
+
+        for tag in self.tags.iter() {
+            result.push_str(&format!("\t\t\"{}\",\n", tag));
+        }
+
+        result.push_str(&format!("\n]\n\t}}"));
+
+        result
+    }
+
+    pub fn http_method_to_output_function(&self) -> String {
+        format!(
+            "\tpub fn {{\nhttp::Method::{}\n}}",
+            self.http_method.to_string()
+        )
+    }
+
+    pub fn to_output_struct(&self, path: &str) -> String {
+        let struct_name = self.operation_id_to_struct_name();
+        let mut result: String = format!("pub struct {} {{}}\n\n", struct_name);
+        result.push_str(&format!("impl {} {{\n", struct_name));
+
+        result.push_str(&path_to_output_function(path));
+        result.push_str(&self.description_to_output_function());
+        result.push_str(&self.summary_to_output_function());
+        result.push_str(&self.tags_to_output_function());
+        result.push_str(&self.http_method_to_output_function());
+
+        result.push_str("\n}");
+
+        result
     }
 }
 
@@ -240,9 +333,59 @@ pub fn parse_content_types(
     content: &BTreeMap<String, oas3::spec::MediaType>,
     operation: &Operation,
     spec: &oas3::Spec,
-) -> anyhow::Result<HttpContent> {
-    Ok(HttpContent {
-        content_type: todo!(),
-        schema_name: todo!(),
-    })
+) -> anyhow::Result<Vec<HttpContent>> {
+    let mut result: Vec<HttpContent> = Vec::new();
+    for item in content.iter() {
+        match &item.1.schema {
+            Some(schema) => {
+                //TODO: handle the diff types
+                let new_content = HttpContent {
+                    content_type: item.0.clone(),
+                    schema_name: object_schema_to_type(schema, spec),
+                };
+
+                result.push(new_content);
+            }
+            None => {
+                result.push(HttpContent {
+                    content_type: item.0.clone(),
+                    schema_name: "TODO_no_schema_serde_json::Value".to_string(),
+                });
+            }
+        }
+    }
+    Ok(result)
+}
+
+pub fn object_schema_to_type(
+    object_schema: &ObjectOrReference<ObjectSchema>,
+    spec: &oas3::Spec,
+) -> String {
+    let mut result: String = "serde_json::Value".to_string();
+
+    result
+}
+
+pub fn path_to_output_function(path: &str) -> String {
+    format!("\tpub fn path() -> &'static str {{\n\t\t\"{}\"\n\t}}", path)
+}
+
+pub fn http_method_to_output_fuction() {}
+
+pub fn request_to_output_struct(request: &HttpRequest, path: &str) -> String {
+    let struct_name = request.operation_id_to_struct_name();
+    let mut result: String = format!(
+        "{}\npub struct {} {{}}\n\n",
+        STRUCT_ANNOTATIONS, struct_name
+    );
+    result.push_str(&format!("impl {} {{\n", struct_name));
+
+    result.push_str(&path_to_output_function(path));
+    result.push_str(&request.description_to_output_function());
+    result.push_str(&request.summary_to_output_function());
+    result.push_str(&request.tags_to_output_function());
+
+    result.push_str("\n}");
+
+    result
 }
