@@ -14,12 +14,27 @@ fn main() -> anyhow::Result<()> {
     let file: &'static str = include_str!("../schema/version/v5/openapi.json");
     let spec: oas3::Spec = oas3::from_json(file).unwrap();
 
-    parse_components(&spec)?;
-    let _paths: Vec<paths::Path> = parse_paths(&spec)?;
+    // parse_components(&spec)?;
+    let paths: Vec<paths::Path> = parse_paths(&spec)?;
+    request_to_rust(paths)?;
 
     Ok(())
 }
 
 pub fn log_error(error: anyhow::Error) {
     eprintln!("{:#?} {:#?}", error, std::backtrace::Backtrace::capture())
+}
+
+pub fn request_to_rust(paths: Vec<paths::Path>) -> anyhow::Result<()> {
+    let mut result: String = String::new();
+
+    for path in paths.into_iter() {
+        for request in path.requests.into_iter() {
+            result.push_str(&request.to_output_struct(&path.path));
+        }
+    }
+
+    file_system::rust_to_file(result.as_bytes(), "output/mod.rs")?;
+
+    Ok(())
 }

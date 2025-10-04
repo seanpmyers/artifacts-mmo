@@ -161,6 +161,8 @@ pub fn create_modules(module_names: &Vec<String>) -> String {
         result.push_str(&format!("pub mod {};\n", remove_invalid_chars(module)));
     }
 
+    result.push_str(&format!("pub mod request;\n"));
+
     result
 }
 
