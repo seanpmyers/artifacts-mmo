@@ -12,6 +12,7 @@ pub mod paths;
 
 fn main() -> anyhow::Result<()> {
     let file: &'static str = include_str!("../schema/version/v5/openapi.json");
+    file_system::output_folder()?;
     let spec: oas3::Spec = oas3::from_json(file).unwrap();
 
     // parse_components(&spec)?;
