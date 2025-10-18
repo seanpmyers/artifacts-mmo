@@ -1,0 +1,10 @@
+#[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
+pub struct MapContentSchema {
+	/// Code: Code of the content.
+	code: String,
+	/// Type of the content.
+	#[serde(flatten)]
+	#[serde(rename = "type")]
+	r#type: super::map_content_type::MapContentType,
+
+}
