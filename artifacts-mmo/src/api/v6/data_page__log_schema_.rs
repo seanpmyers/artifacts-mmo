@@ -3,12 +3,12 @@ pub struct DataPage_LogSchema_ {
 	/// Data
 	data: Vec<super::log_schema::LogSchema>,
 	/// Page
-	page: Option<f64>,
+	page: i32,
 	/// Pages
-	pages: Option<f64>,
+	pages: i32,
 	/// Size
-	size: Option<f64>,
+	size: i32,
 	/// Total
-	total: Option<f64>,
+	total: i32,
 
 }

@@ -12,7 +12,7 @@ pub struct AchievementSchema {
 	#[serde(flatten)]
 	rewards: super::achievement_rewards_schema::AchievementRewardsSchema,
 	/// Target: Target of the achievement.
-	target: Option<String>,
+	target: String,
 	/// Total: Total to do.
 	total: i32,
 	/// Type of achievement.

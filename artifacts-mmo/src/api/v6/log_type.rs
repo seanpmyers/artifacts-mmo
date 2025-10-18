@@ -5,6 +5,7 @@ pub enum LogType {
 	Spawn,
 	Movement,
 	Fight,
+	MultiFight,
 	Crafting,
 	Gathering,
 	BuyGe,
@@ -24,7 +25,6 @@ pub enum LogType {
 	TaskCancelled,
 	TaskCompleted,
 	TaskTrade,
-	ChristmasExchange,
 	Recycling,
 	Rest,
 	Use,
@@ -36,4 +36,5 @@ pub enum LogType {
 	ReceiveGold,
 	ChangeSkin,
 	Rename,
+	Transition,
 }

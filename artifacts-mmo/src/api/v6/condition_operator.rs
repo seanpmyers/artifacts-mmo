@@ -6,4 +6,7 @@ pub enum ConditionOperator {
 	Ne,
 	Gt,
 	Lt,
+	Cost,
+	HasItem,
+	AchievementUnlocked,
 }

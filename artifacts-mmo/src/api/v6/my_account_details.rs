@@ -10,12 +10,14 @@ pub struct MyAccountDetails {
 	banned: bool,
 	/// Email: Email.
 	email: String,
+	/// Event Token: Event tokens for spawning events.
+	event_token: i32,
 	/// Gems: Gems.
 	gems: i32,
 	/// Member: Member status.
 	member: bool,
 	/// Member Expiration: Member expiration date.
-	member_expiration: Option<String>,
+	member_expiration: chrono::DateTime<chrono::Utc>,
 	/// Skins: Skins owned.
 	skins: Vec<serde_json::Value>,
 	/// Account status.

@@ -1,4 +1,7 @@
-use std::{collections::BTreeMap, str::FromStr};
+use std::{
+    collections::{BTreeMap, HashMap},
+    str::FromStr,
+};
 
 use oas3::spec::{ObjectOrReference, ObjectSchema, Operation, Parameter, PathItem};
 
@@ -70,7 +73,7 @@ pub struct HttpResponse {
 
 #[derive(Default)]
 pub struct HttpRequestBody {
-    pub content: Vec<HttpContent>,
+    pub content: HttpContent,
     pub description: Option<String>,
     pub required: bool,
 }
@@ -182,7 +185,7 @@ impl HttpRequest {
 
     pub fn http_method_to_output_function(&self) -> String {
         format!(
-            "\tpub fn http_method() -> http::HttpMethod {{\n\t\thttp::Method::{}\n\t}}\n\n",
+            "\tpub fn http_method() -> http::Method {{\n\t\thttp::Method::{}\n\t}}\n\n",
             self.http_method.to_string()
         )
     }
@@ -210,17 +213,30 @@ impl HttpRequest {
         result.push_str(&self.http_method_to_output_function());
 
         result.push_str("\n}\n");
+        let response_type = &String::from("String");
+        let request_body_type = match &self.body {
+            Some(body) => &body.content.schema_name,
+            None => &String::from("crate::api::NoBody"),
+        };
 
-        result.push_str(&self.implement_endpoint(&struct_name));
+        result.push_str(&self.implement_endpoint(&struct_name, response_type, request_body_type));
 
         result
     }
 
-    pub fn implement_endpoint(&self, struct_name: &str) -> String {
+    pub fn implement_endpoint(
+        &self,
+        struct_name: &str,
+        response_type: &str,
+        request_body_type: &str,
+    ) -> String {
         let mut result: String = format!("\nimpl Endpoint for {} {{\n", struct_name);
 
-        result.push_str(&format!("\t\ttype Response = {};\n", "TODO"));
-        result.push_str(&format!("\t\ttype RequestBody = {};\n\n", "TODO"));
+        result.push_str(&format!("\t\ttype Response = {};\n", response_type));
+        result.push_str(&format!(
+            "\t\ttype RequestBody = {};\n\n",
+            request_body_type
+        ));
 
         result.push_str(&format!(
             "\t\tfn http_request_method() -> http::Method {{\n"
@@ -239,7 +255,10 @@ impl HttpRequest {
     }
 }
 
-pub fn parse_paths(spec: &oas3::Spec) -> anyhow::Result<Vec<Path>> {
+pub fn parse_paths(
+    spec: &oas3::Spec,
+    reference_map: &HashMap<String, String>,
+) -> anyhow::Result<Vec<Path>> {
     let mut parsed_paths: Vec<Path> = Vec::new();
     let Some(spec_paths) = &spec.paths else {
         return Ok(parsed_paths);
@@ -248,67 +267,71 @@ pub fn parse_paths(spec: &oas3::Spec) -> anyhow::Result<Vec<Path>> {
     for (path, item) in spec_paths.iter() {
         parsed_paths.push(Path {
             path: path.clone(),
-            requests: parse_path_item(item, spec),
+            requests: parse_path_item(item, spec, reference_map),
         });
     }
 
     Ok(parsed_paths)
 }
 
-pub fn parse_path_item(item: &PathItem, spec: &oas3::Spec) -> Vec<HttpRequest> {
+pub fn parse_path_item(
+    item: &PathItem,
+    spec: &oas3::Spec,
+    reference_map: &HashMap<String, String>,
+) -> Vec<HttpRequest> {
     let mut requests: Vec<HttpRequest> = Vec::new();
 
     item.get.as_ref().map(|get: &Operation| {
-        match parse_operation(item, get, spec, HttpMethod::GET) {
+        match parse_operation(item, get, spec, HttpMethod::GET, reference_map) {
             Ok(request) => requests.push(request),
             Err(error) => log_error(error),
         }
     });
 
     item.post.as_ref().map(|get: &Operation| {
-        match parse_operation(item, get, spec, HttpMethod::POST) {
+        match parse_operation(item, get, spec, HttpMethod::POST, reference_map) {
             Ok(request) => requests.push(request),
             Err(error) => log_error(error),
         }
     });
 
     item.put.as_ref().map(|get: &Operation| {
-        match parse_operation(item, get, spec, HttpMethod::PUT) {
+        match parse_operation(item, get, spec, HttpMethod::PUT, reference_map) {
             Ok(request) => requests.push(request),
             Err(error) => log_error(error),
         }
     });
 
     item.delete.as_ref().map(|get: &Operation| {
-        match parse_operation(item, get, spec, HttpMethod::DELETE) {
+        match parse_operation(item, get, spec, HttpMethod::DELETE, reference_map) {
             Ok(request) => requests.push(request),
             Err(error) => log_error(error),
         }
     });
 
     item.patch.as_ref().map(|get: &Operation| {
-        match parse_operation(item, get, spec, HttpMethod::PATCH) {
+        match parse_operation(item, get, spec, HttpMethod::PATCH, reference_map) {
             Ok(request) => requests.push(request),
             Err(error) => log_error(error),
         }
     });
 
     item.head.as_ref().map(|get: &Operation| {
-        match parse_operation(item, get, spec, HttpMethod::HEAD) {
+        match parse_operation(item, get, spec, HttpMethod::HEAD, reference_map) {
             Ok(request) => requests.push(request),
             Err(error) => log_error(error),
         }
     });
 
     item.options.as_ref().map(|get: &Operation| {
-        match parse_operation(item, get, spec, HttpMethod::OPTIONS) {
+        match parse_operation(item, get, spec, HttpMethod::OPTIONS, reference_map) {
             Ok(request) => requests.push(request),
             Err(error) => log_error(error),
         }
     });
 
     item.trace.as_ref().map(|get: &Operation| {
-        match parse_operation(item, get, spec, HttpMethod::TRACE) {
+        match parse_operation(item, get, spec, HttpMethod::TRACE, reference_map) {
             Ok(request) => requests.push(request),
             Err(error) => log_error(error),
         }
@@ -322,6 +345,7 @@ pub fn parse_operation(
     operation: &Operation,
     spec: &oas3::Spec,
     http_method: HttpMethod,
+    reference_map: &HashMap<String, String>,
 ) -> anyhow::Result<HttpRequest> {
     Ok(HttpRequest {
         description: item
@@ -329,7 +353,7 @@ pub fn parse_operation(
             .clone()
             .unwrap_or(operation.description.clone().unwrap_or_default()),
         http_method,
-        response: parse_respones(item, operation, spec),
+        response: parse_respones(item, operation, spec, reference_map),
         summary: item
             .summary
             .clone()
@@ -338,9 +362,9 @@ pub fn parse_operation(
         body: operation
             .request_body
             .as_ref()
-            .map(|body| parse_request_body(&body, item, operation, spec))
+            .map(|body| parse_request_body(&body, item, operation, spec, reference_map))
             .transpose()?,
-        parameters: parse_request_paramters(&operation.parameters, spec)?,
+        parameters: parse_request_paramters(&operation.parameters, spec, reference_map)?,
         tags: operation.tags.clone(),
     })
 }
@@ -348,6 +372,7 @@ pub fn parse_operation(
 pub fn parse_request_paramters(
     parameters: &Vec<ObjectOrReference<Parameter>>,
     spec: &oas3::Spec,
+    reference_map: &HashMap<String, String>,
 ) -> anyhow::Result<Vec<HttpRequestParameter>> {
     let mut result: Vec<HttpRequestParameter> = Vec::new();
 
@@ -377,7 +402,7 @@ pub fn parse_request_paramters(
             r#in: "".to_string(),
             required: parameter.required.unwrap_or_default(),
             description: parameter.description.unwrap_or_default(),
-            schema: parse_parameter_schema(&parameter.schema, spec)?,
+            schema: parse_parameter_schema(&parameter.schema, spec, reference_map)?,
         });
     }
 
@@ -387,6 +412,7 @@ pub fn parse_request_paramters(
 pub fn parse_parameter_schema(
     schema: &Option<ObjectOrReference<ObjectSchema>>,
     spec: &oas3::Spec,
+    reference_map: &HashMap<String, String>,
 ) -> anyhow::Result<HttpParameterSchema> {
     match schema {
         Some(schema) => {
@@ -411,6 +437,7 @@ pub fn parse_respones(
     item: &PathItem,
     operation: &Operation,
     spec: &oas3::Spec,
+    reference_map: &HashMap<String, String>,
 ) -> Vec<HttpResponse> {
     let mut result: Vec<HttpResponse> = Vec::new();
 
@@ -422,13 +449,14 @@ pub fn parse_request_body(
     _item: &PathItem,
     operation: &Operation,
     spec: &oas3::Spec,
+    reference_map: &HashMap<String, String>,
 ) -> anyhow::Result<HttpRequestBody> {
     let body = body.resolve(spec)?;
 
     Ok(HttpRequestBody {
         required: body.required.unwrap_or_default(),
         description: body.description,
-        content: parse_content_types(&body.content, operation, spec)?,
+        content: parse_content_types(&body.content, operation, spec, reference_map)?,
     })
 }
 
@@ -436,34 +464,43 @@ pub fn parse_content_types(
     content: &BTreeMap<String, oas3::spec::MediaType>,
     operation: &Operation,
     spec: &oas3::Spec,
-) -> anyhow::Result<Vec<HttpContent>> {
-    let mut result: Vec<HttpContent> = Vec::new();
-    for item in content.iter() {
+    reference_map: &HashMap<String, String>,
+) -> anyhow::Result<HttpContent> {
+    for item in content
+        .iter()
+        .filter(|item| item.0.to_lowercase().contains("application/json"))
+    {
         match &item.1.schema {
             Some(schema) => {
-                let new_content = HttpContent {
+                return Ok(HttpContent {
                     content_type: item.0.clone(),
-                    schema_name: object_schema_to_type(schema, spec),
-                };
-
-                result.push(new_content);
+                    schema_name: object_schema_to_type(schema, spec, reference_map)?,
+                });
             }
             None => {
-                result.push(HttpContent {
+                return Ok(HttpContent {
                     content_type: item.0.clone(),
                     schema_name: "TODO_no_schema_serde_json::Value".to_string(),
                 });
             }
         }
     }
-    Ok(result)
+    panic!("No json content");
 }
 
 pub fn object_schema_to_type(
     object_schema: &ObjectOrReference<ObjectSchema>,
     spec: &oas3::Spec,
-) -> String {
-    let mut result: String = "serde_json::Value".to_string();
+    reference_map: &HashMap<String, String>,
+) -> anyhow::Result<String> {
+    let schema = object_schema.resolve(&spec)?;
+    let Some(title) = schema.title else {
+        return Ok("serde_json::Value".to_string());
+    };
 
-    result
+    let Some(camel_case) = reference_map.get(&title) else {
+        return Ok("serde_json::Value".to_string());
+    };
+
+    Ok(format!("super::{}::{}", camel_case, title))
 }

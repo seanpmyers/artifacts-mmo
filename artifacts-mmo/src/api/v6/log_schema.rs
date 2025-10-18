@@ -9,7 +9,7 @@ pub struct LogSchema {
 	/// Cooldown: Cooldown in seconds.
 	cooldown: i32,
 	/// Cooldown Expiration: Datetime of cooldown expiration.
-	cooldown_expiration: Option<String>,
+	cooldown_expiration: chrono::DateTime<chrono::Utc>,
 	/// Created At: Datetime of creation.
 	created_at: chrono::DateTime<chrono::Utc>,
 	/// Description: Description of action.

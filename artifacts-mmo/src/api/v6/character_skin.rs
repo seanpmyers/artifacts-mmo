@@ -10,4 +10,5 @@ pub enum CharacterSkin {
 	Women3,
 	Corrupted1,
 	Zombie1,
+	Marauder1,
 }

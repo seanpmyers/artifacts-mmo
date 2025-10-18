@@ -3,12 +3,12 @@ pub struct DataPage_GeOrderHistorySchema_ {
 	/// Data
 	data: Vec<super::ge_order_history_schema::GeOrderHistorySchema>,
 	/// Page
-	page: Option<f64>,
+	page: i32,
 	/// Pages
-	pages: Option<f64>,
+	pages: i32,
 	/// Size
-	size: Option<f64>,
+	size: i32,
 	/// Total
-	total: Option<f64>,
+	total: i32,
 
 }

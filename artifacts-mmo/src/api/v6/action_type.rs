@@ -4,6 +4,7 @@ pub enum ActionType {
 	#[default]
 	Movement,
 	Fight,
+	MultiFight,
 	Crafting,
 	Gathering,
 	BuyGe,
@@ -19,7 +20,6 @@ pub enum ActionType {
 	Equip,
 	Unequip,
 	Task,
-	ChristmasExchange,
 	Recycling,
 	Rest,
 	Use,
@@ -28,4 +28,5 @@ pub enum ActionType {
 	GiveGold,
 	ChangeSkin,
 	Rename,
+	Transition,
 }

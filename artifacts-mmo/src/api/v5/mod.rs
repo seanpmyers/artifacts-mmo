@@ -3,7 +3,7 @@ pub mod account_details;
 pub mod account_details_schema;
 pub mod account_leaderboard_schema;
 pub mod account_leaderboard_type;
-pub mod account_leaderboard_type_a_z_a__z0_9_______;
+pub mod account_leaderboard_type_a_z_a_z0_9;
 pub mod account_status;
 pub mod achievement_response_schema;
 pub mod achievement_rewards_schema;

@@ -18,6 +18,8 @@ pub struct MonsterSchema {
 	effects: Vec<super::simple_effect_schema::SimpleEffectSchema>,
 	/// Hp: Monster hit points.
 	hp: i32,
+	/// Initiative: Monster initiative for turn order.
+	initiative: i32,
 	/// Level: Monster level.
 	level: i32,
 	/// Max Gold: Monster maximum gold drop. 
@@ -34,5 +36,9 @@ pub struct MonsterSchema {
 	res_fire: i32,
 	/// Res Water: Monster % water resistance.
 	res_water: i32,
+	/// Monster type.
+	#[serde(flatten)]
+	#[serde(rename = "type")]
+	r#type: super::monster_type::MonsterType,
 
 }

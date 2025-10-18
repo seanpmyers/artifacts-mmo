@@ -4,7 +4,7 @@ pub struct ItemSchema {
 	code: String,
 	/// Conditions: Item conditions. If applicable. Conditions for using or equipping the item.
 	conditions: Vec<super::condition_schema::ConditionSchema>,
-	/// Craft information. If applicable.
+	/// CraftSchema
 	craft: super::craft_schema::CraftSchema,
 	/// Description: Item description.
 	description: String,

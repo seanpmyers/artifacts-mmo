@@ -12,7 +12,7 @@ pub struct TaskFullSchema {
 	#[serde(flatten)]
 	rewards: super::rewards_schema::RewardsSchema,
 	/// Skill: Skill required to complete the task.
-	skill: Option<String>,
+	skill: String,
 	/// Type: The type of task.
 	#[serde(flatten)]
 	#[serde(rename = "type")]

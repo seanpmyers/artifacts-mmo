@@ -1,4 +1,4 @@
-use std::str::from_utf8;
+use std::{collections::HashMap, str::from_utf8};
 
 use oas3::{
     spec::{ObjectOrReference, ObjectSchema, SchemaType, SchemaTypeSet},
@@ -10,7 +10,8 @@ use crate::{
     file_system::{json_to_file, rust_to_file},
 };
 
-pub fn parse_components(spec: &Spec) -> anyhow::Result<()> {
+pub fn parse_components(spec: &Spec) -> anyhow::Result<HashMap<String, String>> {
+    let mut map: HashMap<String, String> = HashMap::new();
     let Some(components) = &spec.components else {
         panic!("No components");
     };
@@ -54,7 +55,13 @@ pub fn parse_components(spec: &Spec) -> anyhow::Result<()> {
                                     rust_string.as_bytes(),
                                     &format!("output/{}.rs", camel_case_schema_name),
                                 )?;
-                                schema_file_modules.push(camel_case_schema_name);
+                                schema_file_modules.push(camel_case_schema_name.clone());
+                                map.insert(
+                                    object_schema
+                                        .title
+                                        .unwrap_or(camel_case_schema_name.clone()),
+                                    camel_case_schema_name,
+                                );
                             }
                         }
                     }
@@ -74,7 +81,13 @@ pub fn parse_components(spec: &Spec) -> anyhow::Result<()> {
                             rust_string.as_bytes(),
                             &format!("output/{}.rs", camel_case_schema_name),
                         )?;
-                        schema_file_modules.push(camel_case_schema_name);
+                        schema_file_modules.push(camel_case_schema_name.clone());
+                        map.insert(
+                            object_schema
+                                .title
+                                .unwrap_or(camel_case_schema_name.clone()),
+                            camel_case_schema_name,
+                        );
                     }
                     SchemaType::Null => {
                         json_to_file("output/test.json", serde_json::to_value(object_schema)?)?;
@@ -100,7 +113,7 @@ pub fn parse_components(spec: &Spec) -> anyhow::Result<()> {
     )?;
 
     println!("schema count: {}", components.schemas.len());
-    Ok(())
+    Ok(map)
 }
 
 pub fn remove_invalid_chars(input: &str) -> String {

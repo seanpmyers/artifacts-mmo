@@ -52,6 +52,8 @@ pub struct CharacterSchema {
 	dmg_fire: i32,
 	/// Dmg Water: % Water damage. Damage increases your water attack.
 	dmg_water: i32,
+	/// Effects: List of active effects on the character.
+	effects: Vec<super::storage_effect_schema::StorageEffectSchema>,
 	/// Fishing Level: Fishing level.
 	fishing_level: i32,
 	/// Fishing Max Xp: Fishing XP required to level up the skill.
@@ -72,6 +74,8 @@ pub struct CharacterSchema {
 	helmet_slot: String,
 	/// Hp: Character actual HP.
 	hp: i32,
+	/// Initiative: Initiative determines turn order in combat. Higher initiative goes first.
+	initiative: i32,
 	/// Inventory: List of inventory slots.
 	inventory: Vec<super::inventory_slot::InventorySlot>,
 	/// Inventory Max Items: Inventory max items.
@@ -82,10 +86,15 @@ pub struct CharacterSchema {
 	jewelrycrafting_max_xp: i32,
 	/// Jewelrycrafting Xp: The current xp level of the Jewelrycrafting skill.
 	jewelrycrafting_xp: i32,
+	/// Character current layer.
+	#[serde(flatten)]
+	layer: super::map_layer::MapLayer,
 	/// Leg Armor Slot: Leg armor slot.
 	leg_armor_slot: String,
 	/// Level: Combat level.
 	level: i32,
+	/// Map Id: Character current map ID.
+	map_id: i32,
 	/// Max Hp: Character max HP.
 	max_hp: i32,
 	/// Max Xp: XP required to level up the character.
@@ -129,6 +138,8 @@ pub struct CharacterSchema {
 	task_total: i32,
 	/// Task Type: Task type.
 	task_type: String,
+	/// Threat: Threat level affects monster targeting in multi-character combat.
+	threat: i32,
 	/// Utility1 Slot: Utility 1 slot.
 	utility1_slot: String,
 	/// Utility1 Slot Quantity: Utility 1 quantity.

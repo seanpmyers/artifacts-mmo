@@ -3,7 +3,7 @@ pub struct AccountAchievementSchema {
 	/// Code: Code of the achievement. 
 	code: String,
 	/// Completed At: Completed at.
-	completed_at: Option<String>,
+	completed_at: chrono::DateTime<chrono::Utc>,
 	/// Current: Current progress.
 	current: i32,
 	/// Description: Description of the achievement.
@@ -16,7 +16,7 @@ pub struct AccountAchievementSchema {
 	#[serde(flatten)]
 	rewards: super::achievement_rewards_schema::AchievementRewardsSchema,
 	/// Target: Target of the achievement.
-	target: Option<String>,
+	target: String,
 	/// Total: Total to do.
 	total: i32,
 	/// Type of achievement.

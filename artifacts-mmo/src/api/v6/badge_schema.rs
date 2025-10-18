@@ -7,6 +7,6 @@ pub struct BadgeSchema {
 	/// Description: Description of the badge.
 	description: String,
 	/// Season: Season of the badge.
-	season: Option<f64>,
+	season: i32,
 
 }

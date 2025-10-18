@@ -3,12 +3,12 @@ pub struct DataPage_AccountLeaderboardSchema_ {
 	/// Data
 	data: Vec<super::account_leaderboard_schema::AccountLeaderboardSchema>,
 	/// Page
-	page: Option<f64>,
+	page: i32,
 	/// Pages
-	pages: Option<f64>,
+	pages: i32,
 	/// Size
-	size: Option<f64>,
+	size: i32,
 	/// Total
-	total: Option<f64>,
+	total: i32,
 
 }

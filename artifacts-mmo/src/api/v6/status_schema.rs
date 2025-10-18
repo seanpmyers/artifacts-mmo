@@ -1,7 +1,5 @@
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct StatusSchema {
-	/// Announcements: Server announcements.
-	announcements: Vec<super::announcement_schema::AnnouncementSchema>,
 	/// Characters Online: Characters online.
 	characters_online: i32,
 	/// Max Level: Maximum level.

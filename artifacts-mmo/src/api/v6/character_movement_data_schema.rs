@@ -9,5 +9,7 @@ pub struct CharacterMovementDataSchema {
 	/// Destination details.
 	#[serde(flatten)]
 	destination: super::map_schema::MapSchema,
+	/// Path: Path taken from start to destination (list of coordinates)
+	path: Vec<serde_json::Value>,
 
 }

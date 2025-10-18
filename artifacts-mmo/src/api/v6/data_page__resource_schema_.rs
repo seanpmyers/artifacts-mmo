@@ -3,12 +3,12 @@ pub struct DataPage_ResourceSchema_ {
 	/// Data
 	data: Vec<super::resource_schema::ResourceSchema>,
 	/// Page
-	page: Option<f64>,
+	page: i32,
 	/// Pages
-	pages: Option<f64>,
+	pages: i32,
 	/// Size
-	size: Option<f64>,
+	size: i32,
 	/// Total
-	total: Option<f64>,
+	total: i32,
 
 }

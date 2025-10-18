@@ -29,7 +29,7 @@ pub fn json_to_file(file_path_string: &str, data: serde_json::Value) -> anyhow::
 }
 
 pub fn output_folder() -> anyhow::Result<()> {
-    let output_path = std::path::Path::new("output").to_path_buf();
+    let output_path = std::path::Path::new("output/request").to_path_buf();
 
     if output_path.exists() {
         return Ok(());
