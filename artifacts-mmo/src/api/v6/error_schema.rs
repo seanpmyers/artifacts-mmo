@@ -3,7 +3,7 @@ pub struct ErrorSchema {
 	/// Error code
 	code: i32,
 	/// Additional error data (used primarily for validation errors)
-	data: TODO_OBJECT_NOT_REFERENCE,
+	data: serde_json::Value,
 	/// Error message
 	message: String,
 

@@ -239,22 +239,34 @@ pub fn schema_object_to_string(
                             };
                             &format!("Vec<{}>", t)
                         }
-                        _ => "Vec<serde::Value>",
+                        _ => "Vec<serde_json::Value>",
                     },
                     SchemaType::Object => match is_reference {
                         true => {
-                            let title = property
-                                .1
-                                .resolve(&spec)?
-                                .title
-                                .map_or("TODO_MISSING_TITLE".to_string(), |x| x);
+                            let title = match property.1.resolve(&spec)?.title {
+                                Some(title) => title,
+                                None => {
+                                    if let ObjectOrReference::Ref {
+                                        ref_path,
+                                        summary: _,
+                                        description: _,
+                                    } = property.1
+                                    {
+                                        let split: std::str::Split<'_, &'static str> =
+                                            ref_path.split("/");
+                                        split.last().unwrap_or("TODO_TITLE_MISSING").to_string()
+                                    } else {
+                                        "TODO_TITLE_MISSING".to_string()
+                                    }
+                                }
+                            };
                             &format!("super::{}::{}", to_camel_case(&title), title)
                         }
-                        false => "TODO_OBJECT_NOT_REFERENCE",
+                        false => "serde_json::Value",
                     },
                     SchemaType::Null => "TODO__NULL",
                 },
-                SchemaTypeSet::Multiple(_items) => "TODO__MULTIPLE ",
+                SchemaTypeSet::Multiple(_items) => "TODO__MULTIPLE",
             },
             None => &{
                 let mut none_type_result = String::new();

@@ -67,7 +67,7 @@ pub struct Path {
 #[derive(Default)]
 pub struct HttpResponse {
     pub status_code: u16,
-    pub description: String,
+    pub description: Option<String>,
     pub body: HttpResponseBody,
 }
 
@@ -213,7 +213,16 @@ impl HttpRequest {
         result.push_str(&self.http_method_to_output_function());
 
         result.push_str("\n}\n");
-        let response_type = &String::from("String");
+        //TODO: fix
+        let response_type: &str = match self
+            .response
+            .iter()
+            .filter(|x| x.status_code >= 200 && x.status_code <= 299)
+            .last()
+        {
+            Some(response) => &response.body.content.schema_name,
+            None => "serde_json::Value",
+        };
         let request_body_type = match &self.body {
             Some(body) => &body.content.schema_name,
             None => &String::from("crate::api::NoBody"),
@@ -245,6 +254,11 @@ impl HttpRequest {
         result.push_str(&format!("\t\t\t{}::http_method()\n", &struct_name));
 
         result.push_str("\t\t}\n\n");
+
+        result.push_str(&format!(
+            "\t\tfn path(&self) -> String {{\n\t\t\t{}::path().to_string()\n\t\t}}\n\n",
+            &struct_name
+        ));
 
         // fn http_request_method() -> http::Method {
         //     http::Method::POST
@@ -353,7 +367,7 @@ pub fn parse_operation(
             .clone()
             .unwrap_or(operation.description.clone().unwrap_or_default()),
         http_method,
-        response: parse_respones(item, operation, spec, reference_map),
+        response: parse_respones(item, operation, spec, reference_map)?,
         summary: item
             .summary
             .clone()
@@ -412,7 +426,7 @@ pub fn parse_request_paramters(
 pub fn parse_parameter_schema(
     schema: &Option<ObjectOrReference<ObjectSchema>>,
     spec: &oas3::Spec,
-    reference_map: &HashMap<String, String>,
+    _reference_map: &HashMap<String, String>,
 ) -> anyhow::Result<HttpParameterSchema> {
     match schema {
         Some(schema) => {
@@ -434,14 +448,30 @@ pub fn parse_parameter_schema(
 }
 
 pub fn parse_respones(
-    item: &PathItem,
+    _item: &PathItem,
     operation: &Operation,
     spec: &oas3::Spec,
     reference_map: &HashMap<String, String>,
-) -> Vec<HttpResponse> {
+) -> anyhow::Result<Vec<HttpResponse>> {
     let mut result: Vec<HttpResponse> = Vec::new();
+    let Some(responses) = &operation.responses else {
+        return Ok(result);
+    };
 
-    result
+    for (status_code, response_object) in responses.iter() {
+        let status_code: u16 = status_code.parse()?;
+        let response = response_object.resolve(&spec)?;
+        let content = parse_content_types(&response.content, operation, spec, reference_map)?;
+        let new_http_response: HttpResponse = HttpResponse {
+            status_code,
+            description: response.description,
+            body: HttpResponseBody { content },
+        };
+
+        result.push(new_http_response);
+    }
+
+    Ok(result)
 }
 
 pub fn parse_request_body(
@@ -462,7 +492,7 @@ pub fn parse_request_body(
 
 pub fn parse_content_types(
     content: &BTreeMap<String, oas3::spec::MediaType>,
-    operation: &Operation,
+    _operation: &Operation,
     spec: &oas3::Spec,
     reference_map: &HashMap<String, String>,
 ) -> anyhow::Result<HttpContent> {
